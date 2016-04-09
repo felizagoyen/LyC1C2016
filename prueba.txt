@@ -1,5 +1,21 @@
-a := "sarasa"
-b := 123
-c := .1
-d := 1.
+string_var := "sarasa"
+int_var := 123
+real_var := .1
+real_var := 1.
 e := a
+
+f := 1 + 1
+f := 2 - 1
+f := 1 * 1
+f := 2 / 1
+
+f := 1.5 + 1 * 1
+f := 1 - 1 * 1
+f := 1 + 2.5 / 1
+f := 1 - 1 / 1.0
+f := int_var * real_var / 15 + 10.1 - 1
+
+a := a ++ a
+a := a ++ "string"
+a := "string" ++ a
+a := "string" ++ "string"

@@ -25,6 +25,11 @@ ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
 %%
 
 ":="                { LOG_MSG("ASSIGNMENT_OPERATOR"); return ASSIGNMENT_OPERATOR; }
+"+"                 { LOG_MSG("ADDITION_OPERATOR"); return ADDITION_OPERATOR; }
+"-"                 { LOG_MSG("SUBSTRACTION_OPERATOR"); return SUBSTRACTION_OPERATOR; }
+"*"                 { LOG_MSG("MULTIPLICATION_OPERATOR"); return MULTIPLICATION_OPERATOR; }
+"/"                 { LOG_MSG("DIVISION_OPERATOR"); return DIVISION_OPERATOR; }
+"++"                { LOG_MSG("CONCATENATION_OPERATOR"); return CONCATENATION_OPERATOR; }
 {INT}               { LOG_MSG("INT"); return INT; }
 {REAL}              { LOG_MSG("REAL"); return REAL; }
 {STRING}            { LOG_MSG("STRING"); return STRING; }
