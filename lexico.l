@@ -17,22 +17,30 @@
 
 DIGIT               [0-9]
 CHARACTER           [a-zA-Z]
-INT                 {DIGIT}+
-REAL                {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
-STRING              \"(\\.|[^"|\|])*\"
+INT_CTE             {DIGIT}+
+REAL_CTE            {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
+STRING_CTE          \"(\\.|[^"|\|])*\"
 ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
 
 %%
 
+"DIM"               { LOG_MSG("DIM"); return DIM; }
+"AS"                { LOG_MSG("AS"); return AS; }
+"string"            { LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
+"integer"           { LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
+"real"              { LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
+","                 { LOG_MSG("DECLARATION_SEPARATOR"); return DECLARATION_SEPARATOR; }
+"["                 { LOG_MSG("OPEN_CLASP"); return OPEN_CLASP; }
+"]"                 { LOG_MSG("CLOSE_CLASP"); return CLOSE_CLASP; }
 ":="                { LOG_MSG("ASSIGNMENT_OPERATOR"); return ASSIGNMENT_OPERATOR; }
+"++"                { LOG_MSG("CONCATENATION_OPERATOR"); return CONCATENATION_OPERATOR; }
 "+"                 { LOG_MSG("ADDITION_OPERATOR"); return ADDITION_OPERATOR; }
 "-"                 { LOG_MSG("SUBSTRACTION_OPERATOR"); return SUBSTRACTION_OPERATOR; }
 "*"                 { LOG_MSG("MULTIPLICATION_OPERATOR"); return MULTIPLICATION_OPERATOR; }
 "/"                 { LOG_MSG("DIVISION_OPERATOR"); return DIVISION_OPERATOR; }
-"++"                { LOG_MSG("CONCATENATION_OPERATOR"); return CONCATENATION_OPERATOR; }
-{INT}               { LOG_MSG("INT"); return INT; }
-{REAL}              { LOG_MSG("REAL"); return REAL; }
-{STRING}            { LOG_MSG("STRING"); return STRING; }
+{INT_CTE}           { LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { LOG_MSG("ID"); return ID; }
 
 %%

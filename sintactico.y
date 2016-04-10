@@ -13,24 +13,44 @@
 FILE  *yyin;
 %}
 
-%token ID ASSIGNMENT_OPERATOR STRING INT REAL
+%token ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
 %token ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
+%token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE DECLARATION_SEPARATOR
 
 %%
 
 program:
-      statements { LOG_MSG("\nSuccessful Compilation\n"); }
+      lines { LOG_MSG("\nSuccessful Compilation\n"); }
+
+lines:
+      declarations statements
 
 statements:
       statements statement 
     | statement
 
+declarations:
+      declarations declaration 
+    | declaration
+
+declaration:
+      DIM OPEN_CLASP declaration_list CLOSE_CLASP 
+
+declaration_list:
+      ID CLOSE_CLASP AS OPEN_CLASP variable_type
+    | ID DECLARATION_SEPARATOR declaration_list DECLARATION_SEPARATOR variable_type
+
+variable_type:
+      STRING_TYPE
+    | INTEGER_TYPE
+    | REAL_TYPE
+
 statement:
-      assignment
+      assignment 
 
 assignment:
-      ID ASSIGNMENT_OPERATOR expression
-    | ID ASSIGNMENT_OPERATOR string_concatenation
+      ID ASSIGNMENT_OPERATOR string_concatenation
+    | ID ASSIGNMENT_OPERATOR expression 
 
 expression:
       expression ADDITION_OPERATOR term
@@ -44,14 +64,14 @@ term:
 
 factor:
       ID
-    | INT
-    | REAL
+    | INT_CTE
+    | REAL_CTE
 
 string_concatenation:
-      STRING
-    | STRING CONCATENATION_OPERATOR STRING
-    | STRING CONCATENATION_OPERATOR ID
-    | ID CONCATENATION_OPERATOR STRING
+      STRING_CTE
+    | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
+    | STRING_CTE CONCATENATION_OPERATOR ID
+    | ID CONCATENATION_OPERATOR STRING_CTE
     | ID CONCATENATION_OPERATOR ID
 
 %%
