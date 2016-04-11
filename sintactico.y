@@ -18,6 +18,8 @@ FILE  *yyin;
 %token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE COMA_SEPARATOR
 %token OPEN_PARENTHESIS CLOSE_PARENTHESIS
 %token ALL_EQUAL
+%token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NEGATION
+%token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE DECLARATION_SEPARATOR
 
 %%
 
@@ -77,6 +79,17 @@ string_concatenation:
     | ID CONCATENATION_OPERATOR STRING_CTE
     | ID CONCATENATION_OPERATOR ID
 
+comparation:
+  comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | expression GREATER_EQUALS_OPERATOR expression |
+  expression GREATER_THAN_OPERATOR expression | expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
+  expression EQUALS_OPERATOR expression
+  
+if:
+  IF_STATEMENT comparation statements END_IF_STATEMENT
+  
+if_else:
+  IF_STATEMENT comparation statements ELSE_STATEMENT statements END_IF_STATEMENT
+
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
 
@@ -87,7 +100,7 @@ expression_lists:
 expression_list:
     | expression_list COMA_SEPARATOR expression
     | expression 
-
+    
 %%
 
 int main( int argc,char *argv[] ) 
