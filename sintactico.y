@@ -15,7 +15,9 @@ FILE  *yyin;
 
 %token ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
 %token ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
-%token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE DECLARATION_SEPARATOR
+%token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE COMA_SEPARATOR
+%token OPEN_PARENTHESIS CLOSE_PARENTHESIS
+%token ALL_EQUAL
 
 %%
 
@@ -38,7 +40,7 @@ declaration:
 
 declaration_list:
       ID CLOSE_CLASP AS OPEN_CLASP variable_type
-    | ID DECLARATION_SEPARATOR declaration_list DECLARATION_SEPARATOR variable_type
+    | ID COMA_SEPARATOR declaration_list COMA_SEPARATOR variable_type
 
 variable_type:
       STRING_TYPE
@@ -47,6 +49,7 @@ variable_type:
 
 statement:
       assignment 
+    | all_equal
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
@@ -73,6 +76,17 @@ string_concatenation:
     | STRING_CTE CONCATENATION_OPERATOR ID
     | ID CONCATENATION_OPERATOR STRING_CTE
     | ID CONCATENATION_OPERATOR ID
+
+all_equal:
+      ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
+
+expression_lists:
+      OPEN_CLASP expression_list CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP
+    | expression_lists COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP
+
+expression_list:
+    | expression_list COMA_SEPARATOR expression
+    | expression 
 
 %%
 

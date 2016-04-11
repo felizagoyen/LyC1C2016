@@ -1,6 +1,9 @@
 DIM [a] AS [string]
 DIM [a,b,c] AS [string,integer,real]
 
+AllEqual([1,4,3],[2,1],[1,2,3,4])
+AllEqual([1+2+3/5,1*a],[a+b+c,e-2/g],[r*t/q,2/c])
+
 string_var := "sarasa"
 int_var := 123
 real_var := .1
