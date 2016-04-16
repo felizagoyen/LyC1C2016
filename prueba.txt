@@ -26,3 +26,19 @@ a := a ++ a
 a := a ++ "string"
 a := "string" ++ a
 a := "string" ++ "string"
+
+IF (f > a) 
+	h := 55
+	IF (f < a) 
+		h := 1242
+	ENDIF
+ELSE
+	h := 69
+ENDIF
+
+
+IF (f > a) 
+	g := 53
+ENDIF
+
+#Iguales(a+b, [2,3,5])
