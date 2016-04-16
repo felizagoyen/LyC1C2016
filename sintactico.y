@@ -81,8 +81,8 @@ string_concatenation:
     | ID CONCATENATION_OPERATOR ID
 
 comparation:
-  expression GREATER_EQUALS_OPERATOR expression |
-  expression GREATER_THAN_OPERATOR expression | expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
+  expression GREATER_EQUALS_OPERATOR expression | expression GREATER_THAN_OPERATOR expression | 
+  expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
   expression EQUALS_OPERATOR expression | expression NOT_EQUALS_OPERATOR expression
   
 condition:
@@ -94,6 +94,9 @@ if:
 if_else:
   IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements ELSE_STATEMENT statements END_IF_STATEMENT
 
+while:
+  WHILE_STATEMENT condition statements END_WHILE_STATEMENT
+  
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
 
