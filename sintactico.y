@@ -66,12 +66,12 @@ expression:
 term:
       term MULTIPLICATION_OPERATOR factor
     | term DIVISION_OPERATOR factor
-    | factor
+    | factor | OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
 
 factor:
       ID
     | INT_CTE
-    | REAL_CTE
+    | REAL_CTE 
 
 string_concatenation:
       STRING_CTE
