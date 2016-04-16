@@ -51,8 +51,7 @@ variable_type:
     | REAL_TYPE
 
 statement:
-      assignment 
-    | all_equal | if | if_else | iguales
+      assignment | all_equal | if |if_else | while | read | write | iguales
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
