@@ -82,7 +82,7 @@ string_concatenation:
 comparation:
   expression GREATER_EQUALS_OPERATOR expression |
   expression GREATER_THAN_OPERATOR expression | expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
-  expression EQUALS_OPERATOR expression
+  expression EQUALS_OPERATOR expression | expression NOT_EQUALS_OPERATOR expression
   
 condition:
   comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | comparation
