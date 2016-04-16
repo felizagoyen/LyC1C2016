@@ -21,11 +21,11 @@ INT_CTE             {DIGIT}+
 REAL_CTE            {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
 STRING_CTE          \"(\\.|[^"|\|])*\"
 ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
-COMENTARIOS          -\/.*\/-
-COMMENT 	        
+COMMENT          -\/.*\/-
 
 %%
 
+{COMMENT}           { LOG_MSG("COMMENT");}
 "DIM"               { LOG_MSG("DIM"); return DIM; }
 "AS"                { LOG_MSG("AS"); return AS; }
 "string"            { LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
