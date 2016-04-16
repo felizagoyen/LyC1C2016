@@ -19,7 +19,7 @@ FILE  *yyin;
 %token READ WRITE
 %token OPEN_PARENTHESIS CLOSE_PARENTHESIS
 %token ALL_EQUAL
-%token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NEGATION
+%token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NEGATION
 
 %%
 
@@ -80,15 +80,18 @@ string_concatenation:
     | ID CONCATENATION_OPERATOR ID
 
 comparation:
-  comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | expression GREATER_EQUALS_OPERATOR expression |
+  expression GREATER_EQUALS_OPERATOR expression |
   expression GREATER_THAN_OPERATOR expression | expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
   expression EQUALS_OPERATOR expression
   
+condition:
+  comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | comparation
+  
 if:
-  IF_STATEMENT comparation statements END_IF_STATEMENT
+  IF_STATEMENT condition statements END_IF_STATEMENT
   
 if_else:
-  IF_STATEMENT comparation statements ELSE_STATEMENT statements END_IF_STATEMENT
+  IF_STATEMENT condition statements ELSE_STATEMENT statements END_IF_STATEMENT
 
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
