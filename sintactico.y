@@ -18,7 +18,7 @@ FILE  *yyin;
 %token DIM OPEN_CLASP CLOSE_CLASP AS STRING_TYPE INTEGER_TYPE REAL_TYPE COMA_SEPARATOR
 %token READ WRITE
 %token OPEN_PARENTHESIS CLOSE_PARENTHESIS
-%token ALL_EQUAL
+%token ALL_EQUAL IGUALES
 %token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NEGATION
 %token END_IF_STATEMENT IF_STATEMENT ELSE_STATEMENT
 
@@ -51,8 +51,7 @@ variable_type:
     | REAL_TYPE
 
 statement:
-      assignment 
-    | all_equal | if |if_else | while | read | write
+      assignment | all_equal | if |if_else | while | read | write | iguales
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
@@ -89,16 +88,19 @@ condition:
   comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | comparation
   
 if:
-  IF_STATEMENT condition statements END_IF_STATEMENT
+  IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements END_IF_STATEMENT
   
 if_else:
-  IF_STATEMENT condition statements ELSE_STATEMENT statements END_IF_STATEMENT
+  IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements ELSE_STATEMENT statements END_IF_STATEMENT
 
 while:
   WHILE_STATEMENT condition statements END_WHILE_STATEMENT
   
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
+
+iguales:
+      IGUALES OPEN_PARENTHESIS expression COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP CLOSE_PARENTHESIS
 
 expression_lists:
       OPEN_CLASP expression_list CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP
