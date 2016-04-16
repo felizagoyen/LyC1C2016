@@ -21,6 +21,7 @@ INT_CTE             {DIGIT}+
 REAL_CTE            {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
 STRING_CTE          \"(\\.|[^"|\|])*\"
 ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
+COMENTARIOS          -\/.*\/-
 COMMENT 	        
 
 %%
