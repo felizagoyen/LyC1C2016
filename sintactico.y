@@ -31,15 +31,15 @@ lines:
       declarations statements
 
 statements:
-      statements statement 
+      statements statement
     | statement
 
 declarations:
-      declarations declaration 
+      declarations declaration
     | declaration
 
 declaration:
-      DIM OPEN_CLASP declaration_list CLOSE_CLASP 
+      DIM OPEN_CLASP declaration_list CLOSE_CLASP
 
 declaration_list:
       ID CLOSE_CLASP AS OPEN_CLASP variable_type
@@ -51,11 +51,18 @@ variable_type:
     | REAL_TYPE
 
 statement:
-      assignment | all_equal | if |if_else | while | read | write | iguales
+      assignment
+    | if
+    | if_else
+    | while
+    | read
+    | write
+    | iguales
+    | all_equal
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
-    | ID ASSIGNMENT_OPERATOR expression 
+    | ID ASSIGNMENT_OPERATOR expression
 
 expression:
       expression ADDITION_OPERATOR term
@@ -65,7 +72,7 @@ expression:
 term:
       term MULTIPLICATION_OPERATOR factor
     | term DIVISION_OPERATOR factor
-    | factor | OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
+    | factor
 
 factor:
       ID
@@ -80,21 +87,27 @@ string_concatenation:
     | ID CONCATENATION_OPERATOR ID
 
 comparation:
-  expression GREATER_EQUALS_OPERATOR expression | expression GREATER_THAN_OPERATOR expression | 
-  expression SMALLER_EQUALS_OPERATOR expression | expression SMALLER_THAN_OPERATOR expression |
-  expression EQUALS_OPERATOR expression | expression NOT_EQUALS_OPERATOR expression
+      expression GREATER_EQUALS_OPERATOR expression
+    | expression GREATER_THAN_OPERATOR expression
+    | expression SMALLER_EQUALS_OPERATOR expression
+    | expression SMALLER_THAN_OPERATOR expression
+    | expression EQUALS_OPERATOR expression
+    | expression NOT_EQUALS_OPERATOR expression
   
 condition:
-  comparation AND_OPERATOR comparation | comparation OR_OPERATOR comparation  | NEGATION comparation | comparation
+      comparation
+    | comparation AND_OPERATOR comparation
+    | comparation OR_OPERATOR comparation
+    | NEGATION comparation
   
 if:
-  IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements END_IF_STATEMENT
+      IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements END_IF_STATEMENT
   
 if_else:
-  IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements ELSE_STATEMENT statements END_IF_STATEMENT
+      IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements ELSE_STATEMENT statements END_IF_STATEMENT
 
 while:
-  WHILE_STATEMENT condition statements END_WHILE_STATEMENT
+      WHILE_STATEMENT condition statements END_WHILE_STATEMENT
   
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
@@ -111,16 +124,16 @@ expression_list:
     | expression 
     
 read:
-	  READ ID
-	
+      READ ID
+
 write:
-	   WRITE string_concatenation
-  	| WRITE expression
+      WRITE string_concatenation
+    | WRITE expression
 %%
 
-int main( int argc,char *argv[] ) 
+int main( int argc,char *argv[] )
 {
-  if ( ( yyin = fopen( argv[1], "rt" ) ) == NULL ) 
+  if ( ( yyin = fopen( argv[1], "rt" ) ) == NULL )
   {
     printf( "Error al abrir %s\n", argv[1] );
     return -1;
@@ -130,7 +143,7 @@ int main( int argc,char *argv[] )
   fclose( yyin );
 }
 
-int yyerror( void ) 
+int yyerror( void )
 {
   printf( "\n\nSyntax Error\n" );
   exit(1);
