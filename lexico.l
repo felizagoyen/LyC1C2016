@@ -32,6 +32,12 @@ COMMENT             -\/.*\/-
 "integer"           { LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
 "real"              { LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
 "AllEqual"          { LOG_MSG("ALL_EQUAL"); return ALL_EQUAL; }
+"#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
+"IF"                { LOG_MSG("IF_STATEMENT"); return IF_STATEMENT; }
+"ENDIF"             { LOG_MSG("END_IF_STATEMENT"); return END_IF_STATEMENT; }
+"ELSE"              { LOG_MSG("ELSE_STATEMENT"); return ELSE_STATEMENT; }
+"WHILE"             { LOG_MSG("WHILE_STATEMENT"); return WHILE_STATEMENT; }
+"ENDWHILE"          { LOG_MSG("END_WHILE_STATEMENT"); return END_WHILE_STATEMENT; }
 "READ"              { LOG_MSG("READ"); return READ; }
 "WRITE"             { LOG_MSG("WRITE"); return WRITE; }
 ","                 { LOG_MSG("COMA_SEPARATOR"); return COMA_SEPARATOR; }
@@ -54,10 +60,6 @@ COMMENT             -\/.*\/-
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
-"ENDIF"             { LOG_MSG("END_IF_STATEMENT"); return END_IF_STATEMENT; }
-"IF"                { LOG_MSG("IF_STATEMENT"); return IF_STATEMENT; }
-"ELSE"              { LOG_MSG("ELSE_STATEMENT"); return ELSE_STATEMENT; }
-"#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
 {INT_CTE}           { add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
 {REAL_CTE}          { add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
 {STRING_CTE}        { add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
