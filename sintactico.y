@@ -1,7 +1,10 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
+#define SYMBOL_TABLE_FILE "ts.txt"
 #define LOGGER 1
 
 #if LOGGER
@@ -11,6 +14,7 @@
 #endif
 
 FILE  *yyin;
+char *yytext;
 %}
 
 %token ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
@@ -131,10 +135,8 @@ write:
     | WRITE expression
 %%
 
-int main( int argc,char *argv[] )
-{
-  if ( ( yyin = fopen( argv[1], "rt" ) ) == NULL )
-  {
+int main( int argc,char *argv[] ) {
+  if ( ( yyin = fopen( argv[1], "rt" ) ) == NULL ) {
     printf( "Error al abrir %s\n", argv[1] );
     return -1;
   }
@@ -143,8 +145,48 @@ int main( int argc,char *argv[] )
   fclose( yyin );
 }
 
-int yyerror( void )
-{
+int yyerror( void ) {
   printf( "\n\nSyntax Error\n" );
   exit(1);
+}
+
+void add_symbol_table( const char* token ) {
+  FILE *ts_file;
+  char temp[512];
+  char string_token[512] = "\0";
+
+  //Open ts file to add register
+  if( ( ts_file = fopen( SYMBOL_TABLE_FILE, "a+" ) ) == NULL ) {
+    printf( "Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE );
+    exit(1);
+  }
+
+  if( strcmp("ID", token) != 0 ) {
+    strcpy( string_token, "_" );
+  }
+  if( strcmp("STRING_CTE", token) != 0 ) {
+    strcpy( string_token, "_" );
+  }
+  strcat( string_token, yytext ); 
+  
+  //If the token is in the table, finish the function
+  while( fgets(temp, 512, ts_file) != NULL ) {
+    if( ( strcmp( strtok ( temp, "|" ), string_token ) ) == 0 ) {
+      return;
+    }
+  }
+
+  // saves the record in [name|type|value] format
+  if( strcmp("ID", token) == 0 ) {
+    fprintf( ts_file, "%s||\n", string_token);
+  } else {
+    if( strcmp("REAL_CTE", token) == 0) {
+      fprintf( ts_file, "%s|%s|%f\n", string_token, token, atof(yytext) );
+    } else {
+      fprintf( ts_file, "%s|%s|%s\n", string_token, token, yytext );
+    }
+  }
+
+  // closes file
+  fclose( ts_file ); 
 }

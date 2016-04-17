@@ -52,15 +52,15 @@ COMMENT             -\/.*\/-
 "<="                { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
 "!"                 { LOG_MSG("NEGATION"); return NEGATION; }
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
-"||                 { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
+"||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
 "ENDIF"             { LOG_MSG("END_IF_STATEMENT"); return END_IF_STATEMENT; }
 "IF"                { LOG_MSG("IF_STATEMENT"); return IF_STATEMENT; }
 "ELSE"              { LOG_MSG("ELSE_STATEMENT"); return ELSE_STATEMENT; }
 "#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
-{INT_CTE}           { LOG_MSG("INT_CTE"); return INT_CTE; }
-{REAL_CTE}          { LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { LOG_MSG("STRING_CTE"); return STRING_CTE; }
-{ID}                { LOG_MSG("ID"); return ID; }
+{INT_CTE}           { add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+{ID}                { add_symbol_table("ID"); LOG_MSG("ID"); return ID; }
 
 %%
