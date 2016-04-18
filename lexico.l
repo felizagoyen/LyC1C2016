@@ -66,3 +66,24 @@ COMMENT             -\/.*\/-
 {ID}                { add_symbol_table("ID"); LOG_MSG("ID"); return ID; }
 
 %%
+
+
+void stringValidation(char * string) {
+	 if(string[0]=='"') {
+		  int count=1;
+		  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
+		   count++;
+		  }
+		  if(string[count]=='"') {
+			exit(0);//esta ok
+		  }
+		  else if(string[count]==STRING_MAX_LENGTH){
+				printf("String index out of bounds\n");
+				exit(1);
+			  }
+	 }
+	 else{
+		printf("Invalid format\n");
+		exit(1);
+	 }
+	}
