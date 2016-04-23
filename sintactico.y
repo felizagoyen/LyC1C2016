@@ -67,6 +67,7 @@ statement:
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
     | ID ASSIGNMENT_OPERATOR expression
+    | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
 
 expression:
       expression ADDITION_OPERATOR term
@@ -79,7 +80,9 @@ term:
     | factor
 
 factor:
-      ID
+      OPEN_PARENTHESIS factor CLOSE_PARENTHESIS
+    | OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
+    | ID
     | INT_CTE
     | REAL_CTE 
 
