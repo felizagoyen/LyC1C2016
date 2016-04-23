@@ -70,12 +70,14 @@ assignment:
     | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
 
 expression:
-      expression ADDITION_OPERATOR term
+     // OPEN_PARENTHESIS expression CLOSE_PARENTHESIS //esto tira shift reduce
+     expression ADDITION_OPERATOR term
     | expression SUBSTRACTION_OPERATOR term
     | term
 
 term:
-      term MULTIPLICATION_OPERATOR factor
+    //  OPEN_PARENTHESIS term CLOSE_PARENTHESIS //y esto tmb creo
+     term MULTIPLICATION_OPERATOR factor
     | term DIVISION_OPERATOR factor
     | factor
 

@@ -28,6 +28,7 @@ a := a ++ a
 a := a ++ "string"
 a := "string" ++ a
 a := "string" ++ "string"
+a := (5+6)/(3)
 
 IF (f > a) 
 	h := 55
