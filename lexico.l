@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include "y.tab.h"
 
-#define LOGGER 1
+#define LOGGER 0
+#define STRING_MAX_LENGTH 64
 
 #if LOGGER
   #define LOG_MSG printf
@@ -63,6 +64,63 @@ COMMENT             -\/.*\/-
 {INT_CTE}           { add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
 {REAL_CTE}          { add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
 {STRING_CTE}        { add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
-{ID}                { add_symbol_table("ID"); LOG_MSG("ID"); return ID; }
+{ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 
 %%
+
+
+int stringValidation(char * string) {
+	 if(string[0]=='"') {
+		  int count=1;
+		  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
+		   count++;
+		  }
+		  if(string[count]=='"') {
+			printf("String OK");
+			return 0;
+		  }
+		  else if(count > STRING_MAX_LENGTH){
+				printf("String index out of bounds\n");
+				exit(1);
+			  }
+	 }
+	 else{
+		printf("Invalid format\n");
+		exit(1);
+	 }
+	}
+
+		//-32768 to 32767
+	int intRangeValidation(char * number) {
+		int count=0, i=1;
+		long n=0;
+		if(number[0]=='-') {
+			count++;
+		}
+		while(number[count]!='\0') {
+			count++;
+		}
+		if(count<6) {
+				printf("int OK");
+				return 0;
+			}
+		else if(count==6) {
+				for(i=1; i<=10000; i=i*10) {
+					count--;
+					n+=number[count]*i;
+				}
+				if(n<=32767 && n>=-32768) {
+					printf("int OK");
+					return 0;
+				}
+			}
+			
+		printf("Number out of range\n");
+		exit(-1);
+		
+	}
+	
+		//-2147483648 to 2147483647
+		int realRangeValidation(char * number) {
+			
+		}
