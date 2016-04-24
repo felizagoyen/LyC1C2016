@@ -1,10 +1,11 @@
+-/ Prueba Declaraciones /-
 DIM [a] AS [string]
 DIM [e,b,c,f,h] AS [string,integer,real,real,integer]
 DIM [string_var, int_var, real_var] AS [string, integer, real]
 
-AllEqual([1,4,3],[2,1],[1,2,3,4])
-AllEqual([1+2+3/5,1*b],[b+c,b-2/c],[b*c/19,2/c])
+-/ Prueba de /- Comentario /-
 
+-/ Prueba Asignaciones /-
 string_var := "sarasa"
 int_var := 123
 real_var := .1
@@ -30,6 +31,15 @@ a := "string" ++ a
 a := "string" ++ "string"
 e := a
 
+-/ Prueba Write /-
+WRITE a
+WRITE "HOLA"
+
+-/ Prueba Read /-
+READ b
+READ c
+
+-/ Preba If Else /-
 IF (f > b) 
 	h := 55
 	IF (f < c) 
@@ -39,8 +49,31 @@ ELSE
 	h := 69
 ENDIF
 
-IF (f > c) 
+-/ Prueba If /-
+IF (f != c) 
 	f := 53
 ENDIF
 
+-/ Prueba While /-
+WHILE (f > 0)
+	f := f - 1
+ENDWHILE
+
+-/ Prueba condiciones multiples /-
+WHILE (f > 3 && b < 3)
+	WRITE "Conicion multiple con and"
+ENDWHILE
+
+IF (f >= 3 || b <= 3)
+	WRITE "Conicion multiple con or"
+ENDIF
+
+-/ Prueba condicion negada /-
+IF(NOT a == b) 
+	WRITE "Conicion negada"
+ENDIF
+
+-/ Temas Especiales /-
+AllEqual([1,4,3],[2,1],[1,2,3,4])
+AllEqual([1+2+3/5,1*b],[b+c,b-2/c],[b*c/19,2/c])
 #Iguales(c+b, [2,3,5])

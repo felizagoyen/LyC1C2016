@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "y.tab.h"
 
-#define LOGGER 0
+#define LOGGER 1
 #define STRING_MAX_LENGTH 64
 
 #if LOGGER
@@ -34,13 +34,14 @@ COMMENT             -\/.*\/-
 "real"              { LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
 "AllEqual"          { LOG_MSG("ALL_EQUAL"); return ALL_EQUAL; }
 "#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
-"IF"                { LOG_MSG("IF_STATEMENT"); return IF_STATEMENT; }
-"ENDIF"             { LOG_MSG("END_IF_STATEMENT"); return END_IF_STATEMENT; }
-"ELSE"              { LOG_MSG("ELSE_STATEMENT"); return ELSE_STATEMENT; }
-"WHILE"             { LOG_MSG("WHILE_STATEMENT"); return WHILE_STATEMENT; }
-"ENDWHILE"          { LOG_MSG("END_WHILE_STATEMENT"); return END_WHILE_STATEMENT; }
+"IF"                { LOG_MSG("IF"); return IF; }
+"ENDIF"             { LOG_MSG("ENDIF"); return ENDIF; }
+"ELSE"              { LOG_MSG("ELSE"); return ELSE; }
+"WHILE"             { LOG_MSG("WHILE"); return WHILE; }
+"ENDWHILE"          { LOG_MSG("ENDWHILE"); return ENDWHILE; }
 "READ"              { LOG_MSG("READ"); return READ; }
 "WRITE"             { LOG_MSG("WRITE"); return WRITE; }
+"NOT"               { LOG_MSG("NOT"); return NOT;}
 ","                 { LOG_MSG("COMA_SEPARATOR"); return COMA_SEPARATOR; }
 "["                 { LOG_MSG("OPEN_CLASP"); return OPEN_CLASP; }
 "]"                 { LOG_MSG("CLOSE_CLASP"); return CLOSE_CLASP; }
@@ -57,7 +58,6 @@ COMMENT             -\/.*\/-
 "=="                { LOG_MSG("EQUALS_OPERATOR"); return EQUALS_OPERATOR; }
 ">="                { LOG_MSG("GREATER_EQUALS_OPERATOR"); return GREATER_EQUALS_OPERATOR; }
 "<="                { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
-"!"                 { LOG_MSG("NEGATION"); return NEGATION; }
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
