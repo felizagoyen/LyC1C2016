@@ -68,17 +68,17 @@ COMMENT             -\/.*\/-
 
 %%
 
-
-void stringValidation(char * string) {
+int stringValidation(char * string) {
 	 if(string[0]=='"') {
 		  int count=1;
 		  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
 		   count++;
 		  }
 		  if(string[count]=='"') {
-			exit(0);//esta ok
+			printf("String OK");
+			return 0;
 		  }
-		  else if(string[count]==STRING_MAX_LENGTH){
+		  else if(count > STRING_MAX_LENGTH){
 				printf("String index out of bounds\n");
 				exit(1);
 			  }
@@ -88,3 +88,38 @@ void stringValidation(char * string) {
 		exit(1);
 	 }
 	}
+
+		//-32768 to 32767
+	int intRangeValidation(char * number) {
+		int count=0, i=1;
+		long n=0;
+		if(number[0]=='-') {
+			count++;
+		}
+		while(number[count]!='\0') {
+			count++;
+		}
+		if(count<6) {
+				printf("int OK");
+				return 0;
+			}
+		else if(count==6) {
+				for(i=1; i<=10000; i=i*10) {
+					count--;
+					n+=number[count]*i;
+				}
+				if(n<=32767 && n>=-32768) {
+					printf("int OK");
+					return 0;
+				}
+			}
+			
+		printf("Number out of range\n");
+		exit(-1);
+		
+	}
+	
+		//-2147483648 to 2147483647
+		int realRangeValidation(char * number) {
+			
+		}
