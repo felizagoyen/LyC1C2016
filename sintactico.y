@@ -22,6 +22,8 @@ char var_name[30][10];
 char var_type[30][10];
 
 void add_var_symbol_table();
+void validate_var_type(char *, char *);
+int valid_type(char *, char *);
 
 %}
 %union {
@@ -101,34 +103,48 @@ statement:
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
+        {
+          validate_var_type($1, "STRING");
+        }
     | ID ASSIGNMENT_OPERATOR expression
+        {
+//          validate_var_type($1, "NUMBER");
+        }
     | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
+        {
+          validate_var_type($1, "NUMBER");
+        }
 
 expression:
-     // OPEN_PARENTHESIS expression CLOSE_PARENTHESIS //esto tira shift reduce
-     expression ADDITION_OPERATOR term
+      expression ADDITION_OPERATOR term
     | expression SUBSTRACTION_OPERATOR term
     | term
 
 term:
-    //  OPEN_PARENTHESIS term CLOSE_PARENTHESIS //y esto tmb creo
-     term MULTIPLICATION_OPERATOR factor
+      term MULTIPLICATION_OPERATOR factor
     | term DIVISION_OPERATOR factor
     | factor
 
 factor:
-      OPEN_PARENTHESIS factor CLOSE_PARENTHESIS
-    | OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
+      OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
     | ID
     | INT_CTE
     | REAL_CTE 
+    | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
 
 string_concatenation:
       STRING_CTE
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
     | STRING_CTE CONCATENATION_OPERATOR ID
     | ID CONCATENATION_OPERATOR STRING_CTE
+        {
+          validate_var_type($1, "STRING");
+        }
     | ID CONCATENATION_OPERATOR ID
+        {
+          validate_var_type($1, "STRING");
+          validate_var_type($3, "STRING");
+        }
 
 comparation:
       expression GREATER_EQUALS_OPERATOR expression
@@ -190,18 +206,18 @@ int main(int argc,char *argv[]) {
 }
 
 /*
-Si hay un error de sintaxis, el analizador llamara a esta funcion
-para generar una salida en pantalla mostrando el error  
-*/
+ * Si hay un error de sintaxis, el analizador llamara a esta funcion
+ * para generar una salida en pantalla mostrando el error  
+ */
 int yyerror(void) {
-  printf("\n\nSyntax Error\n");
+  printf("\n\nError de sintaxis\n");
   fclose(yyin);
   exit(1);
 }
 
-/*
-Agrega a la tabla de simbolos constantes enteras reales y strings
-*/
+ /*
+  * Agrega a la tabla de simbolos constantes enteras reales y strings
+  */
 void add_symbol_table(const char* token) {
   FILE *ts_file;
   char temp[512];
@@ -240,9 +256,9 @@ void add_symbol_table(const char* token) {
   fclose(ts_file); 
 }
 
-/*
-Agrega a la tabla de simbolos las variables con sus tipos
-*/
+ /*
+  * Agrega a la tabla de simbolos las variables con sus tipos
+  */
 void add_var_symbol_table() {
   FILE *ts_file;
   char temp[512];
@@ -272,4 +288,55 @@ void add_var_symbol_table() {
 
   // closes file
   fclose(ts_file); 
+}
+
+ /*
+  * Valida que el tipo de asignacion sea correcto
+  */
+void validate_var_type(char * var_name, char * type) {
+  FILE *ts_file;
+  char temp[512];
+  char is_valid_type = 2; //0 valido, 1 invalido, 2 no se encuentra declarada
+
+  //Abre la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
+    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    exit(1);
+  }
+
+  //Busco la variable en la tabla de simbolos
+  while(fgets(temp, 512, ts_file) != NULL) {
+    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
+      if(valid_type(type, strtok(NULL,"|")) == 0) {
+        is_valid_type = 0; // Tipo valido
+      } else {
+        is_valid_type = 1; // Tipo no valido
+      }
+      break;
+    }
+  }
+
+  // closes file
+  fclose(ts_file); 
+
+  //Si no es valido lanzo el mensaje de error correspondiente
+  if(is_valid_type == 1) {
+    printf("No coinciden los tipos de datos\n");
+    exit(1);
+  } else if(is_valid_type == 2) {
+    printf("La variable no se encuentra declarada\n");
+    exit(1);
+  }
+
+}
+
+int valid_type(char * type, char * type_ts) {
+printf("%s\n", type);
+  if( (strcmp(type, "STRING") == 0 && strcmp(type_ts, "string") == 0) 
+     || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "integer") == 0)
+     || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "real") == 0) ) {
+    return 0;
+  } else {
+    return 1;
+  }
 }
