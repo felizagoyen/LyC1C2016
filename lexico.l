@@ -119,7 +119,34 @@ int stringValidation(char * string) {
 		
 	}
 	
-		//-2147483648 to 2147483647
 		int realRangeValidation(char * number) {
-			
+		
+			int count=0, m=1, numberofdecimals=0;
+			long integerPart=0;
+			while(number[count]!='\0' && number[count]!='.') {	//busca el .
+				count++;
+			}
+			if(number[count]!='\0') {
+			count --;					//se posiciona en la unidad de la parte entera
+			for(int i=count; i>0; i--) {		//arma el numero de atras hacia adelante
+				integerPart+=(number[i]-'0')*m;
+				m*=10;
+			}
+			if(number[0]!='-' && number[0]!='+') {
+				integerPart+=(number[0]-'0')*m;
+			}
+			}
+			if(integerPart>127 || integerPart<-128) { 				//verifica que la parte entera se encuentre dentro del rango correspondiente
+				printf("Number out of range\n");
+				exit(1);
+			}
+			while(number[count]!='\0') {		//cuenta digitos decimales
+				numberofdecimals++;
+			}
+			if(numberofdecimals>6) {		//verifica que no se exceda de la cantidad de decimales permitidos
+				printf("Number out of range\n");
+				exit(1);
+			}
+			printf("real OK");
+			return 0;
 		}
