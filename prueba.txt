@@ -9,6 +9,8 @@ int_var := 123
 real_var := .1
 real_var := 1.
 e := a
+neg_var := -6.35
+neg_exp := (-6)*56-59
 
 f := 1 + 1
 f := 2 - 1
@@ -26,6 +28,7 @@ a := a ++ a
 a := a ++ "string"
 a := "string" ++ a
 a := "string" ++ "string"
+a := (5+6)/(3)
 
 IF (f > a) 
 	h := 55

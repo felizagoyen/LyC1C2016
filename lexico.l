@@ -3,6 +3,8 @@
 #include "y.tab.h"
 
 #define LOGGER 0
+#define LOGGER 1
+#define STRING_MAX_LENGTH 64
 
 #if LOGGER
   #define LOG_MSG printf
@@ -66,3 +68,24 @@ COMMENT             -\/.*\/-
 {ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 
 %%
+
+
+void stringValidation(char * string) {
+	 if(string[0]=='"') {
+		  int count=1;
+		  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
+		   count++;
+		  }
+		  if(string[count]=='"') {
+			exit(0);//esta ok
+		  }
+		  else if(string[count]==STRING_MAX_LENGTH){
+				printf("String index out of bounds\n");
+				exit(1);
+			  }
+	 }
+	 else{
+		printf("Invalid format\n");
+		exit(1);
+	 }
+	}
