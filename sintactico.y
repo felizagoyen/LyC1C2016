@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "y.tab.h"
 
 #define SYMBOL_TABLE_FILE "ts.txt"
 #define LOGGER 1
@@ -15,7 +16,22 @@
 
 FILE  *yyin;
 char *yytext;
+int var_count=0;
+
+char var_name[30][10];
+char var_type[30][10];
+
+void add_var_symbol_table();
+void validate_var_type(char *, char *);
+int valid_type(char *, char *);
+
 %}
+%union {
+    char* str_value;
+    float real_value;
+    int int_value;
+}
+%type <str_value> ID
 
 %token ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
 %token ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
@@ -44,15 +60,36 @@ declarations:
 
 declaration:
       DIM OPEN_CLASP declaration_list CLOSE_CLASP
+          {
+            add_var_symbol_table();
+            var_count=0;
+          }
 
 declaration_list:
       ID CLOSE_CLASP AS OPEN_CLASP variable_type
+          {
+            strcpy(var_name[var_count], $1);
+            var_count++;
+          }
     | ID COMA_SEPARATOR declaration_list COMA_SEPARATOR variable_type
+          {
+            strcpy(var_name[var_count], $1);
+            var_count++;
+          }
 
 variable_type:
       STRING_TYPE
+          {
+            strcpy(var_type[var_count], yytext);
+          }
     | INTEGER_TYPE
+          {
+            strcpy(var_type[var_count], yytext);
+          }
     | REAL_TYPE
+          {
+            strcpy(var_type[var_count], yytext);
+          }
 
 statement:
       assignment
@@ -66,7 +103,17 @@ statement:
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
+        {
+          validate_var_type($1, "STRING");
+        }
     | ID ASSIGNMENT_OPERATOR expression
+        {
+//          validate_var_type($1, "NUMBER");
+        }
+    | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
+        {
+          validate_var_type($1, "NUMBER");
+        }
 
 expression:
       expression ADDITION_OPERATOR term
@@ -79,16 +126,25 @@ term:
     | factor
 
 factor:
-      ID
+      OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
+    | ID
     | INT_CTE
     | REAL_CTE 
+    | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
 
 string_concatenation:
       STRING_CTE
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
     | STRING_CTE CONCATENATION_OPERATOR ID
     | ID CONCATENATION_OPERATOR STRING_CTE
+        {
+          validate_var_type($1, "STRING");
+        }
     | ID CONCATENATION_OPERATOR ID
+        {
+          validate_var_type($1, "STRING");
+          validate_var_type($3, "STRING");
+        }
 
 comparation:
       expression GREATER_EQUALS_OPERATOR expression
@@ -135,58 +191,152 @@ write:
     | WRITE expression
 %%
 
-int main( int argc,char *argv[] ) {
-  if ( ( yyin = fopen( argv[1], "rt" ) ) == NULL ) {
-    printf( "Error al abrir %s\n", argv[1] );
+int main(int argc,char *argv[]) {
+  //Abro el archivo de entrada que se desea compilar
+  if((yyin = fopen( argv[1], "rt")) == NULL) {
+    printf("Error al abrir %s\n", argv[1]);
     return -1;
   }
 
+  //Metodo que recorre el archivo de entrada
   yyparse();
-  fclose( yyin );
+
+  //Cierro el archivo
+  fclose(yyin);
 }
 
-int yyerror( void ) {
-  printf( "\n\nSyntax Error\n" );
+/*
+ * Si hay un error de sintaxis, el analizador llamara a esta funcion
+ * para generar una salida en pantalla mostrando el error  
+ */
+int yyerror(void) {
+  printf("\n\nError de sintaxis\n");
+  fclose(yyin);
   exit(1);
 }
 
-void add_symbol_table( const char* token ) {
+ /*
+  * Agrega a la tabla de simbolos constantes enteras reales y strings
+  */
+void add_symbol_table(const char* token) {
   FILE *ts_file;
   char temp[512];
   char string_token[512] = "\0";
 
-  //Open ts file to add register
-  if( ( ts_file = fopen( SYMBOL_TABLE_FILE, "a+" ) ) == NULL ) {
-    printf( "Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE );
+  //Abro el archivo de la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
+    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
     exit(1);
   }
 
-  if( strcmp("ID", token) != 0 ) {
-    strcpy( string_token, "_" );
+  //Si no es un string, le coloco guion bajo delante
+  if(strcmp("STRING_CTE", token) != 0) {
+    strcpy(string_token, "_");
   }
-  if( strcmp("STRING_CTE", token) != 0 ) {
-    strcpy( string_token, "_" );
-  }
-  strcat( string_token, yytext ); 
+
+  //yytext tiene el lexema de la constante, lo concateno al guion bajo
+  strcat(string_token, yytext); 
   
-  //If the token is in the table, finish the function
-  while( fgets(temp, 512, ts_file) != NULL ) {
-    if( ( strcmp( strtok ( temp, "|" ), string_token ) ) == 0 ) {
+  //Recorro el archivo para ver si ya fue ingresada la constante para no generar duplicados
+  while(fgets(temp, 512, ts_file) != NULL) {
+    if((strcmp(strtok(temp, "|" ), string_token)) == 0) {
+      fclose(ts_file); 
       return;
     }
   }
 
-  // saves the record in [name|type|value] format
-  if( strcmp("ID", token) == 0 ) {
-    fprintf( ts_file, "%s||\n", string_token);
+  //Genero un nuevo registro con el formato name|type|value
+  if(strcmp("REAL_CTE", token) == 0) {
+    fprintf(ts_file, "%s|%s|%f\n", string_token, token, atof(yytext));
   } else {
-    if( strcmp("REAL_CTE", token) == 0) {
-      fprintf( ts_file, "%s|%s|%f\n", string_token, token, atof(yytext) );
-    } else {
-      fprintf( ts_file, "%s|%s|%s\n", string_token, token, yytext );
+    fprintf(ts_file, "%s|%s|%s\n", string_token, token, yytext);
+  }
+
+  //Cierro el archivo de la tabla de simbolos
+  fclose(ts_file); 
+}
+
+ /*
+  * Agrega a la tabla de simbolos las variables con sus tipos
+  */
+void add_var_symbol_table() {
+  FILE *ts_file;
+  char temp[512];
+  int x = 0;
+
+  //Abre la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
+    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    exit(1);
+  }
+
+
+  for(x; x < var_count; x++) {
+    //Si ya existe en la tabla de simbolos, lanzo un error
+    while(fgets(temp, 512, ts_file) != NULL) {
+      if((strcmp(strtok(temp, "|"), var_name[var_count-x-1])) == 0) {
+        printf("La variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
+        fclose(ts_file); 
+        exit(1);
+      }
+    }
+
+    //Genero el registro en la tabla de simbolos
+    fprintf(ts_file, "%s|%s|\n", var_name[var_count-x-1], var_type[x]);
+    rewind(ts_file);
+  }
+
+  // closes file
+  fclose(ts_file); 
+}
+
+ /*
+  * Valida que el tipo de asignacion sea correcto
+  */
+void validate_var_type(char * var_name, char * type) {
+  FILE *ts_file;
+  char temp[512];
+  char is_valid_type = 2; //0 valido, 1 invalido, 2 no se encuentra declarada
+
+  //Abre la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
+    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    exit(1);
+  }
+
+  //Busco la variable en la tabla de simbolos
+  while(fgets(temp, 512, ts_file) != NULL) {
+    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
+      if(valid_type(type, strtok(NULL,"|")) == 0) {
+        is_valid_type = 0; // Tipo valido
+      } else {
+        is_valid_type = 1; // Tipo no valido
+      }
+      break;
     }
   }
 
   // closes file
-  fclose( ts_file ); 
+  fclose(ts_file); 
+
+  //Si no es valido lanzo el mensaje de error correspondiente
+  if(is_valid_type == 1) {
+    printf("No coinciden los tipos de datos\n");
+    exit(1);
+  } else if(is_valid_type == 2) {
+    printf("La variable no se encuentra declarada\n");
+    exit(1);
+  }
+
+}
+
+int valid_type(char * type, char * type_ts) {
+printf("%s\n", type);
+  if( (strcmp(type, "STRING") == 0 && strcmp(type_ts, "string") == 0) 
+     || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "integer") == 0)
+     || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "real") == 0) ) {
+    return 0;
+  } else {
+    return 1;
+  }
 }

@@ -1,17 +1,21 @@
 DIM [a] AS [string]
-DIM [a,b,c] AS [string,integer,real]
+DIM [e,b,c,f,h] AS [string,integer,real,real,integer]
+DIM [string_var, int_var, real_var] AS [string, integer, real]
 
 AllEqual([1,4,3],[2,1],[1,2,3,4])
-AllEqual([1+2+3/5,1*a],[a+b+c,e-2/g],[r*t/q,2/c])
+AllEqual([1+2+3/5,1*b],[b+c,b-2/c],[b*c/19,2/c])
 
 string_var := "sarasa"
 int_var := 123
 real_var := .1
 real_var := 1.
-e := a
 
+b := -6.35
+b := (-6)*56-59
+b := ((b-1)/3 + 5) * 7
+c := 19 * (-1)
 f := 1 + 1
-f := 2 - 1
+f := 2 - 123
 f := 1 * 1
 f := 2 / 1
 f := 1.5 + 1 * 1
@@ -20,25 +24,23 @@ f := 1 + 2.5 / 1
 f := 1 - 1 / 1.0
 f := int_var * real_var / 15 + 10.1 - 1
 
-
-
-a := a ++ a
+a := a ++ e
 a := a ++ "string"
 a := "string" ++ a
 a := "string" ++ "string"
+e := a
 
-IF (f > a) 
+IF (f > b) 
 	h := 55
-	IF (f < a) 
+	IF (f < c) 
 		h := 1242
 	ENDIF
 ELSE
 	h := 69
 ENDIF
 
-
-IF (f > a) 
-	g := 53
+IF (f > c) 
+	f := 53
 ENDIF
 
-#Iguales(a+b, [2,3,5])
+#Iguales(c+b, [2,3,5])

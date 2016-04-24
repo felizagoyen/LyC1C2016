@@ -68,7 +68,6 @@ COMMENT             -\/.*\/-
 
 %%
 
-
 int stringValidation(char * string) {
 	 if(string[0]=='"') {
 		  int count=1;
