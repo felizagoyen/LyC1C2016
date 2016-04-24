@@ -17,13 +17,17 @@
 FILE  *yyin;
 char *yytext;
 int var_count=0;
+int ids_count=-1;
 
 char var_name[30][10];
 char var_type[30][10];
+char ids_type[30][10];
 
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
+void save_type_id(char *);
+void validate_assignament_type(char *);
 
 %}
 %union {
@@ -39,20 +43,25 @@ int valid_type(char *, char *);
 %token READ WRITE
 %token OPEN_PARENTHESIS CLOSE_PARENTHESIS
 %token ALL_EQUAL IGUALES
-%token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NEGATION
-%token IF_STATEMENT ELSE_STATEMENT END_IF_STATEMENT WHILE_STATEMENT END_WHILE_STATEMENT
+%token GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR OR_OPERATOR AND_OPERATOR NOT
+%token IF ELSE ENDIF WHILE ENDWHILE
 
 %%
 
 program:
-      lines { LOG_MSG("\nSuccessful Compilation\n"); }
+      lines { LOG_MSG("\nCompilación exitosa\n"); }
 
 lines:
-      declarations statements
+      declarations sentences
+    | write_sentences
 
-statements:
-      statements statement
-    | statement
+write_sentences:
+      write
+    | write_sentences write
+
+sentences:
+      sentences sentence
+    | sentence
 
 declarations:
       declarations declaration
@@ -91,7 +100,7 @@ variable_type:
             strcpy(var_type[var_count], yytext);
           }
 
-statement:
+sentence:
       assignment
     | if
     | if_else
@@ -108,7 +117,7 @@ assignment:
         }
     | ID ASSIGNMENT_OPERATOR expression
         {
-//          validate_var_type($1, "NUMBER");
+          validate_assignament_type($1);
         }
     | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
         {
@@ -128,6 +137,9 @@ term:
 factor:
       OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
     | ID
+        {
+          save_type_id($1);
+        }
     | INT_CTE
     | REAL_CTE 
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
@@ -158,16 +170,16 @@ condition:
       comparation
     | comparation AND_OPERATOR comparation
     | comparation OR_OPERATOR comparation
-    | NEGATION comparation
+    | NOT comparation
   
 if:
-      IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements END_IF_STATEMENT
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF
   
 if_else:
-      IF_STATEMENT OPEN_PARENTHESIS condition CLOSE_PARENTHESIS statements ELSE_STATEMENT statements END_IF_STATEMENT
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF
 
 while:
-      WHILE_STATEMENT condition statements END_WHILE_STATEMENT
+      WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE
   
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
@@ -188,13 +200,17 @@ read:
 
 write:
       WRITE string_concatenation
-    | WRITE expression
+    | WRITE ID 
+        {
+          validate_var_type($2, "STRING");
+        }
+
 %%
 
 int main(int argc,char *argv[]) {
   //Abro el archivo de entrada que se desea compilar
   if((yyin = fopen( argv[1], "rt")) == NULL) {
-    printf("Error al abrir %s\n", argv[1]);
+    printf("\nError al abrir %s\n", argv[1]);
     return -1;
   }
 
@@ -225,7 +241,7 @@ void add_symbol_table(const char* token) {
 
   //Abro el archivo de la tabla de simbolos
   if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
-    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
     exit(1);
   }
 
@@ -266,7 +282,7 @@ void add_var_symbol_table() {
 
   //Abre la tabla de simbolos
   if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
-    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
     exit(1);
   }
 
@@ -275,7 +291,7 @@ void add_var_symbol_table() {
     //Si ya existe en la tabla de simbolos, lanzo un error
     while(fgets(temp, 512, ts_file) != NULL) {
       if((strcmp(strtok(temp, "|"), var_name[var_count-x-1])) == 0) {
-        printf("La variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
+        printf("\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
         fclose(ts_file); 
         exit(1);
       }
@@ -300,7 +316,7 @@ void validate_var_type(char * var_name, char * type) {
 
   //Abre la tabla de simbolos
   if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
-    printf("Error al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
     exit(1);
   }
 
@@ -321,17 +337,16 @@ void validate_var_type(char * var_name, char * type) {
 
   //Si no es valido lanzo el mensaje de error correspondiente
   if(is_valid_type == 1) {
-    printf("No coinciden los tipos de datos\n");
+    printf("\nNo coinciden los tipos de datos\n");
     exit(1);
   } else if(is_valid_type == 2) {
-    printf("La variable no se encuentra declarada\n");
+    printf("\nLa variable %s no se encuentra declarada\n", var_name);
     exit(1);
   }
 
 }
 
 int valid_type(char * type, char * type_ts) {
-printf("%s\n", type);
   if( (strcmp(type, "STRING") == 0 && strcmp(type_ts, "string") == 0) 
      || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "integer") == 0)
      || (strcmp(type, "NUMBER") == 0 && strcmp(type_ts, "real") == 0) ) {
@@ -339,4 +354,77 @@ printf("%s\n", type);
   } else {
     return 1;
   }
+}
+
+void save_type_id(char *var_name) {
+  FILE *ts_file;
+  char temp[512];
+  char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
+
+  //Abre la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
+    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    exit(1);
+  }
+
+  //Busco la variable en la tabla de simbolos
+  while(fgets(temp, 512, ts_file) != NULL) {
+    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
+      ids_count++;
+      if(strcmp(strtok(NULL,"|"), "string") == 0) {
+        strcpy(ids_type[ids_count], "STRING");
+      } else {
+        strcpy(ids_type[ids_count], "NUMBER");
+      }
+      is_valid_type = 0; // Tipo valido
+      break;
+    }
+  }
+
+  // closes file
+  fclose(ts_file); 
+
+  //Si no es valido lanzo el mensaje de error correspondiente
+  if(is_valid_type == 1) {
+    printf("\nLa variable %s no se encuentra declarada\n", var_name);
+    exit(1);
+  }
+}
+
+void validate_assignament_type(char *var_name) {
+  FILE *ts_file;
+  char temp[512];
+  char type[10];
+  char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
+  int x = 0;
+
+  //Abre la tabla de simbolos
+  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
+    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
+    exit(1);
+  }
+
+  //Busco la variable en la tabla de simbolos
+  while(fgets(temp, 512, ts_file) != NULL) {
+    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
+      if(strcmp(strtok(NULL,"|"), "string") == 0) {
+        strcpy(type, "STRING");
+      } else {
+        strcpy(type, "NUMBER");
+      }
+      for(x; x <= ids_count; x++) {
+        printf("\n%d --- %s --- %s\n", ids_count, type, ids_type[x]);
+        if(strcmp(type, ids_type[x]) != 0) {
+          printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
+          exit(1);
+        }
+      }
+      break;
+    }
+  }
+
+  // closes file
+  fclose(ts_file); 
+
+  ids_count=-1;
 }
