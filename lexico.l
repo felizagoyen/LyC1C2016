@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "y.tab.h"
 
-#define LOGGER 1
+#define LOGGER 0
 
 #if LOGGER
   #define LOG_MSG printf
@@ -63,6 +63,6 @@ COMMENT             -\/.*\/-
 {INT_CTE}           { add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
 {REAL_CTE}          { add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
 {STRING_CTE}        { add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
-{ID}                { add_symbol_table("ID"); LOG_MSG("ID"); return ID; }
+{ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 
 %%
