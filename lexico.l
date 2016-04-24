@@ -3,7 +3,6 @@
 #include "y.tab.h"
 
 #define LOGGER 0
-#define LOGGER 1
 #define STRING_MAX_LENGTH 64
 
 #if LOGGER
