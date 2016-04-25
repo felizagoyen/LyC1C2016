@@ -1,3 +1,4 @@
+del ts.txt
 c:\GnuWin32\bin\flex.exe lexico.l
 pause
 c:\GnuWin32\bin\bison.exe -dyv sintactico.y
@@ -11,5 +12,4 @@ del y.tab.c
 del y.output
 del y.tab.h
 del TPFinal.exe
-del ts.txt
 pause

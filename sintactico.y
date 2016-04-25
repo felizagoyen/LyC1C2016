@@ -1,3 +1,10 @@
+/*
+ * TP correspondiente al segundo cuatrimestre del 2016
+ * Alumnos:
+ * Allegretti, Daniela
+ * Elizagoyen, Fernando
+ * Escalante, Gonzalo
+ */
 %{
 #include <stdio.h>
 #include <stdlib.h>
