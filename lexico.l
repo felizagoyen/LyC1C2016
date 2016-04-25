@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <math.h>
 #include "y.tab.h"
 
 #define LOGGER 1
@@ -102,7 +103,7 @@ void int_range_validation(char * number) {
   } else if(count==5) {
     for(i=1; i<=10000; i=i*10) {
       count--;
-      n+=number[count]*i;
+      n+=(number[count]-'0')*i;
     }
     if(n<=32767 && n>=-32768) {
       return;
@@ -128,14 +129,12 @@ void real_range_validation(char * number) {
       integer_part+=(number[i]-'0')*m;
       m*=10;
     }
-    if(number[0]!='-' && number[0]!='+') {
-      integer_part+=(number[0]-'0')*m;
-    }
   }
-  if(integer_part>127 || integer_part<-128) { //verifica que la parte entera se encuentre dentro del rango correspondiente
+  if(integer_part>(3.402823466*pow(10,38))) { //verifica que la parte entera se encuentre dentro del rango correspondiente
     printf("Number out of range\n");
     exit(1);
   }
+  count+=2;
   while(number[count]!='\0') {  //cuenta digitos decimales
     number_of_decimals++;
     count++;
@@ -144,4 +143,4 @@ void real_range_validation(char * number) {
     printf("Number out of range\n");
     exit(1);
   }
-}
+} 

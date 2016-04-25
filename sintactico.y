@@ -124,6 +124,10 @@ assignment:
           validate_var_type($1, "NUMBER");
         }
 
+expressions:
+      expression
+    | string_concatenation
+
 expression:
       expression ADDITION_OPERATOR term
     | expression SUBSTRACTION_OPERATOR term
@@ -159,12 +163,12 @@ string_concatenation:
         }
 
 comparation:
-      expression GREATER_EQUALS_OPERATOR expression
-    | expression GREATER_THAN_OPERATOR expression
-    | expression SMALLER_EQUALS_OPERATOR expression
-    | expression SMALLER_THAN_OPERATOR expression
-    | expression EQUALS_OPERATOR expression
-    | expression NOT_EQUALS_OPERATOR expression
+      expressions GREATER_EQUALS_OPERATOR expressions
+    | expressions GREATER_THAN_OPERATOR expressions
+    | expressions SMALLER_EQUALS_OPERATOR expressions
+    | expressions SMALLER_THAN_OPERATOR expressions
+    | expressions EQUALS_OPERATOR expressions
+    | expressions NOT_EQUALS_OPERATOR expressions
   
 condition:
       comparation
