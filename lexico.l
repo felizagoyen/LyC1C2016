@@ -3,7 +3,7 @@
 #include <math.h>
 #include "y.tab.h"
 
-#define LOGGER 1
+#define LOGGER 0
 #define STRING_MAX_LENGTH 32
 
 #if LOGGER

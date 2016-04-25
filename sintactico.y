@@ -65,7 +65,7 @@ sentences:
 
 declarations:
       declarations declaration
-    | declaration
+    | declaration 
 
 declaration:
       DIM OPEN_CLASP declaration_list CLOSE_CLASP
@@ -101,14 +101,14 @@ variable_type:
           }
 
 sentence:
-      assignment
-    | if
-    | if_else
-    | while
-    | read
-    | write
-    | iguales
-    | all_equal
+      assignment { LOG_MSG("Asinación"); }
+    | if { LOG_MSG("Sentencia IF"); }
+    | if_else { LOG_MSG("Sentencia IF ELSE"); }
+    | while { LOG_MSG("Sentencia WHILE"); }
+    | read { LOG_MSG("Sentencia READ"); }
+    | write { LOG_MSG("Sentencia WRITE"); }
+    | iguales { LOG_MSG("Sentencia #IGUALES"); }
+    | all_equal { LOG_MSG("Sentencia ALLEQUALS"); }
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
@@ -125,8 +125,8 @@ assignment:
         }
 
 expressions:
-      expression
-    | string_concatenation
+      expression { LOG_MSG("Expresión"); }
+    | string_concatenation { LOG_MSG("Concatenacion de strings"); }
 
 expression:
       expression ADDITION_OPERATOR term
