@@ -3,13 +3,17 @@
 #include "y.tab.h"
 
 #define LOGGER 1
-#define STRING_MAX_LENGTH 64
+#define STRING_MAX_LENGTH 32
 
 #if LOGGER
   #define LOG_MSG printf
 #else
   #define LOG_MSG(...)
 #endif
+
+void string_validation(char *);
+void int_range_validation(char *);
+void real_range_validation(char *);
 
 %}
 
@@ -61,92 +65,83 @@ COMMENT             -\/.*\/-
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
-{INT_CTE}           { add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
-{REAL_CTE}          { add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+{INT_CTE}           { int_range_validation(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { real_range_validation(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { string_validation(yytext);add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 
 %%
 
-int stringValidation(char * string) {
-	 if(string[0]=='"') {
-		  int count=1;
-		  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
-		   count++;
-		  }
-		  if(string[count]=='"') {
-			printf("String OK");
-			return 0;
-		  }
-		  else if(count > STRING_MAX_LENGTH){
-				printf("String index out of bounds\n");
-				exit(1);
-			  }
-	 }
-	 else{
-		printf("Invalid format\n");
-		exit(1);
-	 }
-	}
+/*
+ * Valida la cantidad de caracteres de los strings
+ */
+void string_validation(char * string) {
+  int count=1;
+  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
+    count++;
+  }
+  if(string[count]=='"') {
+    return;
+  } else if(count > STRING_MAX_LENGTH){
+    printf("String index out of bounds\n");
+    exit(1);
+  }
+}
 
-		//-32768 to 32767
-	int intRangeValidation(char * number) {
-		int count=0, i=1;
-		long n=0;
-		if(number[0]=='-') {
-			count++;
-		}
-		while(number[count]!='\0') {
-			count++;
-		}
-		if(count<6) {
-				printf("int OK");
-				return 0;
-			}
-		else if(count==6) {
-				for(i=1; i<=10000; i=i*10) {
-					count--;
-					n+=number[count]*i;
-				}
-				if(n<=32767 && n>=-32768) {
-					printf("int OK");
-					return 0;
-				}
-			}
-			
-		printf("Number out of range\n");
-		exit(-1);
-		
-	}
-	
-		int realRangeValidation(char * number) {
-		
-			int count=0, m=1, numberofdecimals=0;
-			long integerPart=0;
-			while(number[count]!='\0' && number[count]!='.') {	//busca el .
-				count++;
-			}
-			if(number[count]!='\0') {
-			count --;					//se posiciona en la unidad de la parte entera
-			for(int i=count; i>0; i--) {		//arma el numero de atras hacia adelante
-				integerPart+=(number[i]-'0')*m;
-				m*=10;
-			}
-			if(number[0]!='-' && number[0]!='+') {
-				integerPart+=(number[0]-'0')*m;
-			}
-			}
-			if(integerPart>127 || integerPart<-128) { 				//verifica que la parte entera se encuentre dentro del rango correspondiente
-				printf("Number out of range\n");
-				exit(1);
-			}
-			while(number[count]!='\0') {		//cuenta digitos decimales
-				numberofdecimals++;
-			}
-			if(numberofdecimals>6) {		//verifica que no se exceda de la cantidad de decimales permitidos
-				printf("Number out of range\n");
-				exit(1);
-			}
-			printf("real OK");
-			return 0;
-		}
+/*
+ * Valida el rango de los numeros enteros
+ */
+void int_range_validation(char * number) {
+  int count=0, i=1;
+  long n=0;
+  while(number[count]!='\0') {
+    count++;
+  }
+  if(count<5) {
+    return;
+  } else if(count==5) {
+    for(i=1; i<=10000; i=i*10) {
+      count--;
+      n+=number[count]*i;
+    }
+    if(n<=32767 && n>=-32768) {
+      return;
+    }
+  }
+  printf("Number out of range\n");
+  exit(-1);
+}
+
+/*
+ * Valida el rango de los numeros reales
+ */
+void real_range_validation(char * number) {
+  int count=0, m=1, i=0, number_of_decimals=0;
+  long integer_part=0;
+  while(number[count]!='\0' && number[count]!='.') {	//busca el .
+    count++;
+  }
+  if(number[count]!='\0') {
+    count --; //se posiciona en la unidad de la parte entera
+    i=count;
+    for(i; i>0; i--) {  //arma el numero de atras hacia adelante
+      integer_part+=(number[i]-'0')*m;
+      m*=10;
+    }
+    if(number[0]!='-' && number[0]!='+') {
+      integer_part+=(number[0]-'0')*m;
+    }
+  }
+  if(integer_part>127 || integer_part<-128) { //verifica que la parte entera se encuentre dentro del rango correspondiente
+    printf("Number out of range\n");
+    exit(1);
+  }
+  while(number[count]!='\0') {  //cuenta digitos decimales
+    number_of_decimals++;
+    count++;
+  }
+  if(number_of_decimals>6) {  //verifica que no se exceda de la cantidad de decimales permitidos
+    printf("Number out of range\n");
+    exit(1);
+  }
+}

@@ -413,7 +413,6 @@ void validate_assignament_type(char *var_name) {
         strcpy(type, "NUMBER");
       }
       for(x; x <= ids_count; x++) {
-        printf("\n%d --- %s --- %s\n", ids_count, type, ids_type[x]);
         if(strcmp(type, ids_type[x]) != 0) {
           printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
           exit(1);
