@@ -106,7 +106,7 @@ int stringValidation(char * string) {
 		else if(count==6) {
 				for(i=1; i<=10000; i=i*10) {
 					count--;
-					n+=number[count]*i;
+					n+=(number[count]-'0')*i;
 				}
 				if(n<=32767 && n>=-32768) {
 					printf("int OK");
