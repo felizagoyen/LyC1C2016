@@ -11,4 +11,5 @@ del y.tab.c
 del y.output
 del y.tab.h
 del TPFinal.exe
+del ts.txt
 pause
