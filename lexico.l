@@ -59,23 +59,23 @@ COMMENT             -\/.*\/-
 "]"                 { LOG_MSG("CLOSE_CLASP"); return CLOSE_CLASP; }
 "("                 { LOG_MSG("OPEN_PARENTHESIS"); return OPEN_PARENTHESIS; }
 ")"                 { LOG_MSG("CLOSE_PARENTHESIS"); return CLOSE_PARENTHESIS; }
-":="                { LOG_MSG("ASSIGNMENT_OPERATOR"); return ASSIGNMENT_OPERATOR; }
-"++"                { LOG_MSG("CONCATENATION_OPERATOR"); return CONCATENATION_OPERATOR; }
-"+"                 { LOG_MSG("ADDITION_OPERATOR"); return ADDITION_OPERATOR; }
-"-"                 { LOG_MSG("SUBSTRACTION_OPERATOR"); return SUBSTRACTION_OPERATOR; }
-"*"                 { LOG_MSG("MULTIPLICATION_OPERATOR"); return MULTIPLICATION_OPERATOR; }
-"/"                 { LOG_MSG("DIVISION_OPERATOR"); return DIVISION_OPERATOR; }
-">"                 { LOG_MSG("GREATER_THAN_OPERATOR"); return GREATER_THAN_OPERATOR; }
-"<"                 { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_THAN_OPERATOR; }
-"=="                { LOG_MSG("EQUALS_OPERATOR"); return EQUALS_OPERATOR; }
-">="                { LOG_MSG("GREATER_EQUALS_OPERATOR"); return GREATER_EQUALS_OPERATOR; }
-"<="                { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
-"&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
-"||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
-"!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
-{INT_CTE}           { int_range_validation(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
-{REAL_CTE}          { real_range_validation(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { string_validation(yytext);add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+":="                { yylval.str_value=strdup(yytext); LOG_MSG("ASSIGNMENT_OPERATOR"); return ASSIGNMENT_OPERATOR; }
+"++"                { yylval.str_value=strdup(yytext); LOG_MSG("CONCATENATION_OPERATOR"); return CONCATENATION_OPERATOR; }
+"+"                 { yylval.str_value=strdup(yytext); LOG_MSG("ADDITION_OPERATOR"); return ADDITION_OPERATOR; }
+"-"                 { yylval.str_value=strdup(yytext); LOG_MSG("SUBSTRACTION_OPERATOR"); return SUBSTRACTION_OPERATOR; }
+"*"                 { yylval.str_value=strdup(yytext); LOG_MSG("MULTIPLICATION_OPERATOR"); return MULTIPLICATION_OPERATOR; }
+"/"                 { yylval.str_value=strdup(yytext); LOG_MSG("DIVISION_OPERATOR"); return DIVISION_OPERATOR; }
+">"                 { yylval.str_value=strdup(yytext); LOG_MSG("GREATER_THAN_OPERATOR"); return GREATER_THAN_OPERATOR; }
+"<"                 { yylval.str_value=strdup(yytext); LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_THAN_OPERATOR; }
+"=="                { yylval.str_value=strdup(yytext); LOG_MSG("EQUALS_OPERATOR"); return EQUALS_OPERATOR; }
+">="                { yylval.str_value=strdup(yytext); LOG_MSG("GREATER_EQUALS_OPERATOR"); return GREATER_EQUALS_OPERATOR; }
+"<="                { yylval.str_value=strdup(yytext); LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
+"&&"                { yylval.str_value=strdup(yytext); LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
+"||"                { yylval.str_value=strdup(yytext); LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
+"!="                { yylval.str_value=strdup(yytext); LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
+{INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 
 %%
