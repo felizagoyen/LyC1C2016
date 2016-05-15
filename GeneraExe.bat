@@ -1,8 +1,8 @@
-c:\GnuWin32\bin\flex.exe lexico.l
+C:\GnuWin32\bin\flex.exe lexico.l
 pause
-c:\GnuWin32\bin\bison.exe -dyv sintactico.y
+C:\GnuWin32\bin\bison.exe -dyv sintactico.y
 pause
-c:\MinGW\bin\gcc.exe lex.yy.c y.tab.c -o TPFinal.exe
+C:\MinGW\bin\gcc.exe lex.yy.c y.tab.c -o TPFinal.exe
 pause
 pause
 TPfinal.exe prueba.txt

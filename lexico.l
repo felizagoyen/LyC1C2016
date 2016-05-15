@@ -1,6 +1,7 @@
 %{
-#include <stdio.h>
+
 #include "y.tab.h"
+#include <stdio.h>
 
 #define LOGGER 1
 #define STRING_MAX_LENGTH 64
