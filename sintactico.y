@@ -26,6 +26,7 @@ FILE  *yyin;
 char *yytext;
 int var_count=0;
 int ids_count=-1;
+int polish_index=0;
 
 char var_name[30][10];
 char var_type[30][10];
@@ -61,7 +62,10 @@ void insert_polish(char *);
 %%
 
 program:
-      lines { LOG_MSG("\nCompilación exitosa\n"); }
+      lines
+        {
+          LOG_MSG("\nCompilación exitosa\n");
+        }
 
 lines:
       declarations sentences
@@ -252,27 +256,33 @@ string_concatenation:
 comparation:
       expressions GREATER_EQUALS_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BLT");
         }
     | expressions GREATER_THAN_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BLE");
         }
     | expressions SMALLER_EQUALS_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BGT");
         }
     | expressions SMALLER_THAN_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BGE");
         }
     | expressions EQUALS_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BNE");
         }
     | expressions NOT_EQUALS_OPERATOR expressions
         { 
-          insert_polish($2);
+          insert_polish("CMP");
+          insert_polish("BEQ");
         }
   
 condition:
@@ -550,4 +560,6 @@ void insert_polish(char * element) {
 
   // closes file
   fclose(code_file); 
+
+  polish_index++;
 }
