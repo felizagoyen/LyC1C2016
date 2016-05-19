@@ -3,6 +3,9 @@
 if [[ -f ts.txt ]]; then
   rm ts.txt
 fi
+if [[ -f intermedia.txt ]]; then
+  rm intermedia.txt
+fi
 flex lexico.l
 bison -dyvt sintactico.y
 gcc lex.yy.c y.tab.c -o TPFinal

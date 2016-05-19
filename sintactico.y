@@ -1,3 +1,10 @@
+/*
+ * TP correspondiente al segundo cuatrimestre del 2016
+ * Alumnos:
+ * Allegretti, Daniela
+ * Elizagoyen, Fernando
+ * Escalante, Gonzalo
+ */
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +13,7 @@
 #include "y.tab.h"
 
 #define SYMBOL_TABLE_FILE "ts.txt"
+#define CODE_FILE "intermedia.txt"
 #define LOGGER 1
 
 #if LOGGER
@@ -28,6 +36,7 @@ void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
 void validate_assignament_type(char *);
+void insert_polish(char *);
 
 %}
 %union {
@@ -35,7 +44,10 @@ void validate_assignament_type(char *);
     float real_value;
     int int_value;
 }
-%type <str_value> ID
+
+%type <str_value> ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
+%type <str_value> ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
+%type <str_value> GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR
 
 %token ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
 %token ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
@@ -102,36 +114,88 @@ variable_type:
 
 sentence:
       assignment
+        {
+          LOG_MSG("Asinación");
+        }
     | if
+        {
+          LOG_MSG("Sentencia IF");
+        }
     | if_else
+        {
+          LOG_MSG("Sentencia IF ELSE");
+        }
     | while
+        {
+          LOG_MSG("Sentencia WHILE");
+        }
     | read
+        {
+          LOG_MSG("Sentencia READ");
+        }
     | write
+        {
+          LOG_MSG("Sentencia WRITE");
+        }
     | iguales
+        {
+          LOG_MSG("Sentencia #IGUALES");
+        }
     | all_equal
+        {
+          LOG_MSG("Sentencia ALLEQUALS");
+        }
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
         {
           validate_var_type($1, "STRING");
+          insert_polish($1);
+          insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR expression
         {
           validate_assignament_type($1);
+          insert_polish($1);
+          insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
         {
           validate_var_type($1, "NUMBER");
+          insert_polish($1);
+          insert_polish($2);
+        }
+
+expressions:
+      expression
+        {
+          LOG_MSG("Expresión");
+        }
+    | string_concatenation
+        {
+          LOG_MSG("Concatenacion de strings");
         }
 
 expression:
       expression ADDITION_OPERATOR term
+        {
+          insert_polish($2);
+        }
     | expression SUBSTRACTION_OPERATOR term
+        {
+          insert_polish($2);
+        }
     | term
 
 term:
       term MULTIPLICATION_OPERATOR factor
+        {
+          insert_polish($2);
+        }
     | term DIVISION_OPERATOR factor
+        {
+          insert_polish($2);
+        }
     | factor
 
 factor:
@@ -139,32 +203,77 @@ factor:
     | ID
         {
           save_type_id($1);
+          insert_polish($1);
         }
     | INT_CTE
-    | REAL_CTE 
+        {
+          insert_polish($1);
+        }
+    | REAL_CTE
+        {
+          insert_polish($1);
+        }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
 
 string_concatenation:
       STRING_CTE
+        {
+          insert_polish($1);
+        }
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
+        {
+          insert_polish($1);
+          insert_polish($3);
+          insert_polish($2);
+        }
     | STRING_CTE CONCATENATION_OPERATOR ID
+        {
+          validate_var_type($3, "STRING");
+          insert_polish($1);
+          insert_polish($3);
+          insert_polish($2);
+        }
     | ID CONCATENATION_OPERATOR STRING_CTE
         {
           validate_var_type($1, "STRING");
+          insert_polish($1);
+          insert_polish($3);
+          insert_polish($2);
         }
     | ID CONCATENATION_OPERATOR ID
         {
           validate_var_type($1, "STRING");
           validate_var_type($3, "STRING");
+          insert_polish($1);
+          insert_polish($3);
+          insert_polish($2);
         }
 
 comparation:
-      expression GREATER_EQUALS_OPERATOR expression
-    | expression GREATER_THAN_OPERATOR expression
-    | expression SMALLER_EQUALS_OPERATOR expression
-    | expression SMALLER_THAN_OPERATOR expression
-    | expression EQUALS_OPERATOR expression
-    | expression NOT_EQUALS_OPERATOR expression
+      expressions GREATER_EQUALS_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
+    | expressions GREATER_THAN_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
+    | expressions SMALLER_EQUALS_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
+    | expressions SMALLER_THAN_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
+    | expressions EQUALS_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
+    | expressions NOT_EQUALS_OPERATOR expressions
+        { 
+          insert_polish($2);
+        }
   
 condition:
       comparation
@@ -193,14 +302,14 @@ expression_lists:
 
 expression_list:
     | expression_list COMA_SEPARATOR expression
-    | expression 
+    | expression
     
 read:
       READ ID
 
 write:
       WRITE string_concatenation
-    | WRITE ID 
+    | WRITE ID
         {
           validate_var_type($2, "STRING");
         }
@@ -413,7 +522,6 @@ void validate_assignament_type(char *var_name) {
         strcpy(type, "NUMBER");
       }
       for(x; x <= ids_count; x++) {
-        printf("\n%d --- %s --- %s\n", ids_count, type, ids_type[x]);
         if(strcmp(type, ids_type[x]) != 0) {
           printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
           exit(1);
@@ -427,4 +535,19 @@ void validate_assignament_type(char *var_name) {
   fclose(ts_file); 
 
   ids_count=-1;
+}
+
+void insert_polish(char * element) {
+  FILE *code_file;
+
+  //Abre el archivo de codigo intermedio
+  if((code_file = fopen(CODE_FILE, "a+")) == NULL) {
+    printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
+    exit(1);
+  }
+
+  fprintf(code_file, "%s\n", element);
+
+  // closes file
+  fclose(code_file); 
 }
