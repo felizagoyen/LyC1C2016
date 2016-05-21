@@ -585,7 +585,7 @@ void create_intermediate_file() {
   }
 
   p = polish;
-  while(p->next) {
+  while(p) {
     fprintf(code_file, "%s\n", p->element);
     p = p->next;
   }
