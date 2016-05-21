@@ -22,11 +22,18 @@
   #define LOG_MSG(...)
 #endif
 
+typedef struct Polish {
+  struct Polish *next;
+  char *element;
+} struct_polish;
+
 FILE  *yyin;
 char *yytext;
 int var_count=0;
 int ids_count=-1;
 int polish_index=0;
+struct_polish *polish;
+struct_polish *last_element_polish;
 
 char var_name[30][10];
 char var_type[30][10];
@@ -38,6 +45,7 @@ int valid_type(char *, char *);
 void save_type_id(char *);
 void validate_assignament_type(char *);
 void insert_polish(char *);
+void create_intermediate_file();
 
 %}
 %union {
@@ -333,8 +341,14 @@ int main(int argc,char *argv[]) {
     return -1;
   }
 
+  //Borro la tabla de simbolos si existe 
+  remove(SYMBOL_TABLE_FILE);
+  
   //Metodo que recorre el archivo de entrada
   yyparse();
+
+  //Genero el archivo intermedio
+  create_intermediate_file();
 
   //Cierro el archivo
   fclose(yyin);
@@ -548,18 +562,34 @@ void validate_assignament_type(char *var_name) {
 }
 
 void insert_polish(char * element) {
-  FILE *code_file;
+  struct_polish *p = malloc(sizeof(struct_polish)); 
+  p->element = element;
+  p->next = NULL;
+  
+  if(polish) {
+    last_element_polish->next = p;
+  } else {
+    polish = p;
+  }
+    last_element_polish = p;
+    polish_index++;
+}
 
+void create_intermediate_file() {
+  FILE *code_file;
+  struct_polish *p;
   //Abre el archivo de codigo intermedio
   if((code_file = fopen(CODE_FILE, "a+")) == NULL) {
     printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
     exit(1);
   }
 
-  fprintf(code_file, "%s\n", element);
+  p = polish;
+  while(p->next) {
+    fprintf(code_file, "%s\n", p->element);
+    p = p->next;
+  }
 
   // closes file
   fclose(code_file); 
-
-  polish_index++;
 }
