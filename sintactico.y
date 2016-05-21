@@ -324,11 +324,18 @@ expression_list:
     
 read:
       READ ID
+        {
+          insert_polish("READ");
+        }
 
 write:
       WRITE string_concatenation
+        {
+          insert_polish("WRITE");
+        }
     | WRITE ID
         {
+          insert_polish("WRITE");
           validate_var_type($2, "STRING");
         }
 
