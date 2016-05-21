@@ -324,11 +324,18 @@ expression_list:
     
 read:
       READ ID
+        {
+          insert_polish("READ");
+        }
 
 write:
       WRITE string_concatenation
+        {
+          insert_polish("WRITE");
+        }
     | WRITE ID
         {
+          insert_polish("WRITE");
           validate_var_type($2, "STRING");
         }
 
@@ -579,7 +586,7 @@ void create_intermediate_file() {
   FILE *code_file;
   struct_polish *p;
   //Abre el archivo de codigo intermedio
-  if((code_file = fopen(CODE_FILE, "a+")) == NULL) {
+  if((code_file = fopen(CODE_FILE, "wt")) == NULL) {
     printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
     exit(1);
   }
