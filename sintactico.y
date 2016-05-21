@@ -579,7 +579,7 @@ void create_intermediate_file() {
   FILE *code_file;
   struct_polish *p;
   //Abre el archivo de codigo intermedio
-  if((code_file = fopen(CODE_FILE, "a+")) == NULL) {
+  if((code_file = fopen(CODE_FILE, "wt")) == NULL) {
     printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
     exit(1);
   }
