@@ -32,7 +32,7 @@ DIGIT               [0-9]
 CHARACTER           [a-zA-Z]
 INT_CTE             {DIGIT}+
 REAL_CTE            {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
-STRING_CTE          \"(\\.|[^"|\|])*\"
+STRING_CTE          \"(\\.|[^"])*\"
 ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
 COMMENT             -\/.*\/-
 
@@ -41,9 +41,9 @@ COMMENT             -\/.*\/-
 {COMMENT}           { LOG_MSG("COMMENT"); }
 "DIM"               { LOG_MSG("DIM"); return DIM; }
 "AS"                { LOG_MSG("AS"); return AS; }
-"string"            { LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
-"integer"           { LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
-"real"              { LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
+"string"            { yylval.str_value=strdup(yytext); LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
+"integer"           { yylval.str_value=strdup(yytext); LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
+"real"              { yylval.str_value=strdup(yytext); LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
 "AllEqual"          { LOG_MSG("ALL_EQUAL"); return ALL_EQUAL; }
 "#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
 "IF"                { LOG_MSG("IF"); return IF; }
