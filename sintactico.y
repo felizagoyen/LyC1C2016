@@ -15,6 +15,7 @@
 #define CODE_FILE "intermedia.txt"
 #define ASSEMBLER_FILE "Final.txt"
 #define LOGGER 1
+#define STRING_MAX_LENGTH 32
 
 #if LOGGER
   #define LOG_MSG printf
@@ -362,45 +363,45 @@ if:
 if_else:
       IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
         {
-    		  char aux[10];
-    		  insert_polish("");
-    		  struct_polish *p = pop_stack();
-              sprintf(aux, "%d", (polish_index + 2));
-    		  p->element = strdup(&aux[0]);
-    		  push_stack(last_element_polish);
-    		  insert_polish("BI");
-	      } 
+          char aux[10];
+          insert_polish("");
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index + 2));
+          p->element = strdup(&aux[0]);
+          push_stack(last_element_polish);
+          insert_polish("BI");
+        } 
       ELSE sentences 
         {
-    		  char aux[10];
-    		  insert_polish("");
-    		  struct_polish *p = pop_stack();
-              sprintf(aux, "%d", (polish_index));
-    		  p->element = strdup(&aux[0]);
-    		  push_stack(last_element_polish);		  
-	      } 
+          char aux[10];
+          insert_polish("");
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index));
+          p->element = strdup(&aux[0]);
+          push_stack(last_element_polish);		  
+        } 
       ENDIF
   
 while:
-       
       WHILE 
-      {
-      insert_polish("");
-      push_stack(last_element_polish);
-       }
+        {
+        }
        OPEN_PARENTHESIS condition 
         {
           validate_condition_type();
         }
-      CLOSE_PARENTHESIS sentences {
-		  char aux[10];
-		  struct_polish *p = pop_stack();
+      CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index+2));
-		  p->element = strdup(&aux[0]); //escribe pos de salto condicional
-		  p = pop_stack();
-		  last_element_polish->element = p->element;	//escribe pos de salto incondicional
-		  insert_polish("BI");
-	  } ENDWHILE 	  
+          p->element = strdup(&aux[0]); //escribe pos de salto condicional
+          p = pop_stack();
+          last_element_polish->element = p->element;	//escribe pos de salto incondicional
+          insert_polish("");  
+          insert_polish("BI");
+        } 
+      ENDWHILE 	  
 	  
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
@@ -521,13 +522,15 @@ int main(int argc,char *argv[]) {
   //Metodo que recorre el archivo de entrada
   yyparse();
 
+  //Genero archivo assembler
+  create_assembler_header();
+
   //Genero el archivo de la tabla de simbolos
   create_ts_file();
 
   //Genero el archivo intermedio
   create_intermediate_file();
 
-  create_assembler_header();
   //Cierro el archivo
   fclose(yyin);
 }
@@ -725,7 +728,6 @@ void validate_assignament_type(char *var_name) {
         strcpy(type, "NUMBER");
       }
       for(x; x <= types_validations_count; x++) {
-        printf("%s - %s", type, types_validations[x]); 
         if(strcmp(type, types_validations[x]) != 0) {
           printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
           exit(1);
@@ -840,7 +842,7 @@ struct_polish *pop_stack() {
 
 void create_assembler_header() {
   FILE *assembler_file;
- 
+  char value[32];
   //Abre el archivo de assembler
   if((assembler_file = fopen(ASSEMBLER_FILE, "wt")) == NULL) {
     printf("\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
@@ -850,9 +852,29 @@ void create_assembler_header() {
   fprintf(assembler_file, ".MODEL LARGE\n");
   fprintf(assembler_file, ".386\n");
   fprintf(assembler_file, ".STACK 200h\n\n");
-  fprintf(assembler_file, ".DATA\n");
+  fprintf(assembler_file, ".DATA\n\n");
+  fprintf(assembler_file, "STRINGMAXLENGTH equ %d\n\n", STRING_MAX_LENGTH);
 
   struct_ts *p = ts;
+
+  while(p) {
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "real") == 0 || strcmp(p->type, "string") == 0) {
+      strcpy(value, "?");
+    } else {
+      strcpy(value, p->value);
+    }
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "INT_CTE") == 0
+      || strcmp(p->type, "real") == 0 || strcmp(p->type, "REAL_CTE") == 0) {
+      fprintf(assembler_file, "%s dd %s\n", p->name, value);
+    } else {
+      if(strcmp(value,"?") == 0) {
+        fprintf(assembler_file, "%s db STRINGMAXLENGTH dup(?),'$'\n", p->name);
+      } else {
+        fprintf(assembler_file, "%s db \"%s\",'$',%d dup(?)\n", p->name, value, (STRING_MAX_LENGTH - p->length));
+      }
+    }
+    p = p->next;
+  }
 
 }
 
@@ -860,12 +882,12 @@ void validate_condition_type() {
   int x = 0;
   char type[10] = "NUMBER";
   for(x; x <= types_validations_count; x++) {
-    printf(" ---------- %s - %s", type, types_validations[x]); 
     if(strcmp(type, types_validations[x]) != 0) {
-      printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
+      printf("\nNo es posible comparar tipos de datos del tipo string\n");
       exit(1);
     }
   }
   
   types_validations_count = -1;
 }
+
