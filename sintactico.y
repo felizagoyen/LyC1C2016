@@ -293,6 +293,7 @@ string_concatenation:
 comparation:
       expression GREATER_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -300,6 +301,7 @@ comparation:
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -307,6 +309,7 @@ comparation:
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -314,6 +317,7 @@ comparation:
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -321,6 +325,7 @@ comparation:
         }
     | expression EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -328,6 +333,7 @@ comparation:
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -340,51 +346,62 @@ condition:
     | comparation OR_OPERATOR comparation
     | NOT comparation
  
+ 
 if:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
-		  char aux[10];
-		  insert_polish("");
-		  struct_polish *p = pop_stack();
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          insert_polish("");
+          struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index));
-		  p->element = strdup(&aux[0]);
-		  push_stack(last_element_polish);	
-	  } ENDIF
+          p->element = strdup(&aux[0]);
+          push_stack(last_element_polish);	
+        } 
+      ENDIF
  
 if_else:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
-		  char aux[10];
-		  insert_polish("");
-		  struct_polish *p = pop_stack();
-          sprintf(aux, "%d", (polish_index + 2));
-		  p->element = strdup(&aux[0]);
-		  push_stack(last_element_polish);
-		  insert_polish("BI");
-	  } ELSE sentences {
-		  char aux[10];
-		  insert_polish("");
-		  struct_polish *p = pop_stack();
-          sprintf(aux, "%d", (polish_index));
-		  p->element = strdup(&aux[0]);
-		  push_stack(last_element_polish);		  
-	  } ENDIF
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
+        {
+    		  char aux[10];
+    		  insert_polish("");
+    		  struct_polish *p = pop_stack();
+              sprintf(aux, "%d", (polish_index + 2));
+    		  p->element = strdup(&aux[0]);
+    		  push_stack(last_element_polish);
+    		  insert_polish("BI");
+	      } 
+      ELSE sentences 
+        {
+    		  char aux[10];
+    		  insert_polish("");
+    		  struct_polish *p = pop_stack();
+              sprintf(aux, "%d", (polish_index));
+    		  p->element = strdup(&aux[0]);
+    		  push_stack(last_element_polish);		  
+	      } 
+      ENDIF
   
 while:
+       
+      WHILE 
       {
-		  insert_polish("");
-		  push_stack(last_element_polish);
-	  } WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
+      insert_polish("");
+      push_stack(last_element_polish);
+       }
+       OPEN_PARENTHESIS condition 
+        {
+          validate_condition_type();
+        }
+      CLOSE_PARENTHESIS sentences {
 		  char aux[10];
-		  insert_polish("");
 		  struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index+2));
-		  p->element = strdup(&aux[0]);
+		  p->element = strdup(&aux[0]); //escribe pos de salto condicional
 		  p = pop_stack();
-          sprintf(aux, "%d", (polish_index));
-		  p->element = strdup(&aux[0]);
-		  insert_polish(p->element);
+		  last_element_polish->element = p->element;	//escribe pos de salto incondicional
 		  insert_polish("BI");
-	  } ENDWHILE 
-
+	  } ENDWHILE 	  
+	  
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
@@ -839,11 +856,11 @@ void create_assembler_header() {
 
 }
 
-void validate_conditions_types() {
+void validate_condition_type() {
   int x = 0;
   char type[10] = "NUMBER";
   for(x; x <= types_validations_count; x++) {
-    printf("%s - %s", type, types_validations[x]); 
+    printf(" ---------- %s - %s", type, types_validations[x]); 
     if(strcmp(type, types_validations[x]) != 0) {
       printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
       exit(1);

@@ -70,7 +70,7 @@ IF (f >= 3 || b <= 3)
 ENDIF
 
 -/ Prueba condicion negada /-
-IF(NOT a == b) 
+IF(NOT h == b) 
 	WRITE "Conicion negada"
 ENDIF
 
