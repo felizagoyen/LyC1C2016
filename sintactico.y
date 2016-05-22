@@ -27,15 +27,15 @@ typedef struct Polish {
 } struct_polish;
 
 typedef struct Stack {
-	struct_polish element;
+	struct_polish *element;
 	struct Stack *previous; 
 } struct_stack;
 
 FILE  *yyin;
 char *yytext;
-int var_count=0;
-int ids_count=-1;
-int polish_index=0;
+int var_count = 0;
+int ids_count = -1;
+int polish_index = 1;
 struct_polish *polish;
 struct_polish *last_element_polish;
 struct_stack *top_element_stack = NULL;
@@ -44,6 +44,9 @@ char var_name[30][10];
 char var_type[30][10];
 char ids_type[30][10];
 
+int all_equals_pivote_index = 1;
+int all_equals_to_compare_index = 1;
+
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
@@ -51,8 +54,11 @@ void save_type_id(char *);
 void validate_assignament_type(char *);
 void insert_polish(char *);
 void create_intermediate_file();
-void push_stack(struct_polish); 
-struct_polish pop_stack();
+void create_equals_condition();
+void create_all_equals_pivote();
+void create_all_equals_condition();
+void push_stack(struct_polish *); 
+struct_polish *pop_stack();
 
 %}
 %union {
@@ -156,12 +162,9 @@ sentence:
         {
           LOG_MSG("Sentencia WRITE");
         }
-    | iguales
-        {
-          LOG_MSG("Sentencia #IGUALES");
-        }
     | all_equal
         {
+          all_equals_pivote_index = 1;
           LOG_MSG("Sentencia ALLEQUALS");
         }
 
@@ -184,16 +187,13 @@ assignment:
           insert_polish($1);
           insert_polish($2);
         }
-
-expressions:
-      expression
+    | ID ASSIGNMENT_OPERATOR iguales
         {
-          LOG_MSG("Expresión");
-        }
-    | string_concatenation
-        {
-          LOG_MSG("Concatenacion de strings");
-        }
+          validate_var_type($1, "NUMBER");
+          LOG_MSG("Sentencia #IGUALES");
+          insert_polish($1);
+          insert_polish($2);
+        }   
 
 expression:
       expression ADDITION_OPERATOR term
@@ -269,46 +269,46 @@ string_concatenation:
         }
 
 comparation:
-      expressions GREATER_EQUALS_OPERATOR expressions
+      expression GREATER_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BLT");
         }
-    | expressions GREATER_THAN_OPERATOR expressions
+    | expression GREATER_THAN_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BLE");
         }
-    | expressions SMALLER_EQUALS_OPERATOR expressions
+    | expression SMALLER_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BGT");
         }
-    | expressions SMALLER_THAN_OPERATOR expressions
+    | expression SMALLER_THAN_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BGE");
         }
-    | expressions EQUALS_OPERATOR expressions
+    | expression EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BNE");
         }
-    | expressions NOT_EQUALS_OPERATOR expressions
+    | expression NOT_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish("");
-		  push_stack(*last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BEQ");
         }
   
@@ -328,18 +328,102 @@ while:
       WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE
   
 all_equal:
-      ALL_EQUAL OPEN_PARENTHESIS expression_lists CLOSE_PARENTHESIS
+      ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
+        {
+          insert_polish("True");
+          insert_polish("");
+          insert_polish("BI");
+          insert_polish("False");
+        }
+
+expressions_list_all_equals_to_compare:
+      expressions_list_all_equals_to_compare CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP
+      expression_list_all_equals_to_compare
+        {
+          if(all_equals_to_compare_index < all_equals_pivote_index) {
+            LOG_MSG("La lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            exit(1);
+          }
+          all_equals_to_compare_index = 1;
+        }
+    | expression_list_all_equals_to_compare
+        {
+          if(all_equals_to_compare_index < all_equals_pivote_index) {
+            LOG_MSG("La lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            exit(1);
+          }
+          all_equals_to_compare_index = 1;
+        }
+
+expression_list_all_equals_to_compare:
+      expression_list_all_equals_to_compare COMA_SEPARATOR expression
+        {
+          if(all_equals_to_compare_index >= all_equals_pivote_index) {
+            LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
+            exit(1);
+          }
+          char str[10], aux[20] = "_allEqualsPivot";
+          sprintf(str, "%d", all_equals_to_compare_index);
+          strcat(aux, str);
+          insert_polish(strdup(&aux[0]));
+          insert_polish("CMP");
+          insert_polish("");
+          insert_polish("BNE");
+          all_equals_to_compare_index++;
+        }
+    | expression
+        {
+          if(all_equals_to_compare_index >= all_equals_pivote_index) {
+            LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
+            exit(1);
+          }
+          char str[10], aux[20] = "_allEqualsPivot";
+          sprintf(str, "%d", all_equals_to_compare_index);
+          strcat(aux, str);
+          insert_polish(strdup(&aux[0]));
+          insert_polish("CMP");
+          insert_polish("");
+          insert_polish("BNE");
+          all_equals_to_compare_index++;
+        }
+
+expression_list_all_equals_pivote:
+      expression_list_all_equals_pivote COMA_SEPARATOR expression
+        {
+          create_all_equals_pivote();
+        }
+    | expression
+        {
+          create_all_equals_pivote();
+        }
 
 iguales:
-      IGUALES OPEN_PARENTHESIS expression COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP CLOSE_PARENTHESIS
+      IGUALES
+          {
+            insert_polish("0");
+            insert_polish("_equalsCount");
+            insert_polish(":=");  
+          }
+      OPEN_PARENTHESIS expression
+          {
+            insert_polish("_equalsPivot");
+            insert_polish(":=");
+          } 
+      COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
+          {
+            insert_polish("_equalsCount");
+          }
 
-expression_lists:
-      OPEN_CLASP expression_list CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP
-    | expression_lists COMA_SEPARATOR OPEN_CLASP expression_list CLOSE_CLASP
-
-expression_list:
-    | expression_list COMA_SEPARATOR expression
+expression_list_equals:
+    | expression_list_equals COMA_SEPARATOR expression
+        {
+          create_equals_condition();
+        }
     | expression
+        {
+          create_equals_condition();
+        }
+        
     
 read:
       READ ID
@@ -597,45 +681,78 @@ void insert_polish(char * element) {
   } else {
     polish = p;
   }
-    last_element_polish = p;
-    polish_index++;
+
+  last_element_polish = p;
+  polish_index++;
 }
 
 void create_intermediate_file() {
   FILE *code_file;
-  struct_polish *p;
+  struct_polish *p, *next;
   //Abre el archivo de codigo intermedio
   if((code_file = fopen(CODE_FILE, "wt")) == NULL) {
     printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
     exit(1);
   }
 
-  p = polish;
-  while(p) {
-    fprintf(code_file, "%s\n", p->element);
-    p = p->next;
+  next = polish;
+  while(next) {
+    fprintf(code_file, "%s\n", next->element);
+    p = next;
+    next = next->next;
+    free(p);
   }
+
+  polish = NULL;
+  last_element_polish = NULL;
 
   // closes file
   fclose(code_file); 
 }
 
-void push_stack(struct_polish element) {
-	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
-	  ne->element = element;
-		if(top_element_stack) {
-			ne->previous = top_element_stack;		
-		}
-		else {
-		 ne->previous = NULL;
-		}
-		top_element_stack = ne;
+void create_equals_condition() {
+  char aux[10];
+  insert_polish("_igualesPivot");
+  insert_polish("CMP");
+  sprintf(aux, "%d", (polish_index + 7));
+  insert_polish(strdup(&aux[0]));
+  insert_polish("BNE");
+  insert_polish("1");
+  insert_polish("+");
+  insert_polish("_equalsCount");
+  insert_polish("_equalsCount");
+  insert_polish(":=");
 }
-struct_polish pop_stack() {
-	struct_stack * aux;
-	struct_polish top = top_element_stack->element;
-	aux = top_element_stack;
-	top_element_stack = top_element_stack->previous;
-	free(aux);
-	return top;
+
+void create_all_equals_pivote() {
+  char str[10], aux[20] = "_allEqualsPivot";
+  sprintf(str, "%d", all_equals_pivote_index);
+  strcat(aux, str);
+  insert_polish(strdup(&aux[0]));
+  insert_polish(":=");
+  all_equals_pivote_index++;
+}
+
+void create_all_equals_condition() {
+  
+}
+
+void push_stack(struct_polish *element) {
+  struct_stack *ne = malloc(sizeof(struct_stack)); //new element
+  ne->element = element;
+  if(top_element_stack) {
+    ne->previous = top_element_stack;		
+  } else {
+    ne->previous = NULL;
+  }
+  top_element_stack = ne;
+}
+
+struct_polish *pop_stack() {
+  struct_stack * aux;
+  struct_polish * top = top_element_stack->element;
+  aux = top_element_stack;
+  top_element_stack = top_element_stack->previous;
+  free(aux);
+  return top;
 }
