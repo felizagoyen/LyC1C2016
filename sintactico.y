@@ -155,6 +155,7 @@ variable_type:
 sentence:
       assignment
         {
+          types_validations_count = -1;
           LOG_MSG("Asignación");
         }
     | if
@@ -474,18 +475,21 @@ read:
         {
           insert_polish($2);
           insert_polish("READ");
+          types_validations_count = -1;
         }
 
 write:
       WRITE string_concatenation
         {
           insert_polish("WRITE");
+          types_validations_count = -1;
         }
     | WRITE ID
         {
           insert_polish($2);
           insert_polish("WRITE");
           validate_var_type($2, "STRING");
+          types_validations_count = -1;
         }
 
 %%
@@ -715,7 +719,7 @@ void validate_assignament_type(char *var_name) {
     p = p->next;
   }
 
-  types_validations_count=-1;
+  types_validations_count = -1;
 }
 
 void insert_polish(char * element) {
