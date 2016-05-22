@@ -25,12 +25,12 @@ typedef struct Polish {
   struct Polish *next;
   char *element;
 } struct_polish;
-/*
+
 typedef struct Stack {
-	int * element;
+	struct_polish element;
 	struct Stack *previous; 
 } struct_stack;
-*/
+
 FILE  *yyin;
 char *yytext;
 int var_count=0;
@@ -38,7 +38,7 @@ int ids_count=-1;
 int polish_index=0;
 struct_polish *polish;
 struct_polish *last_element_polish;
-//struct_stack *top_element_stack;
+struct_stack *top_element_stack = NULL;
 
 char var_name[30][10];
 char var_type[30][10];
@@ -51,11 +51,8 @@ void save_type_id(char *);
 void validate_assignament_type(char *);
 void insert_polish(char *);
 void create_intermediate_file();
-/*
-void push_stack(int *); 
-int * pop_stack();
-int * pick();
-*/
+void push_stack(struct_polish); 
+struct_polish pop_stack();
 
 %}
 %union {
@@ -276,36 +273,42 @@ comparation:
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BLT");
         }
     | expressions GREATER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BLE");
         }
     | expressions SMALLER_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BGT");
         }
     | expressions SMALLER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BGE");
         }
     | expressions EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BNE");
         }
     | expressions NOT_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
 		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BEQ");
         }
   
@@ -616,8 +619,8 @@ void create_intermediate_file() {
   // closes file
   fclose(code_file); 
 }
-/*
-void push_stack(int * element) {
+
+void push_stack(struct_polish element) {
 	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
 	  ne->element = element;
 		if(top_element_stack) {
@@ -628,18 +631,11 @@ void push_stack(int * element) {
 		}
 		top_element_stack = ne;
 }
-int * pop_stack() {
+struct_polish pop_stack() {
 	struct_stack * aux;
-	int * top = top_element_stack->element;
+	struct_polish top = top_element_stack->element;
 	aux = top_element_stack;
 	top_element_stack = top_element_stack->previous;
 	free(aux);
 	return top;
 }
-int * pick() {
-	if(top_element_stack) {
-		return top_element_stack->element;
-	}
-	return NULL;
-}
-*/
