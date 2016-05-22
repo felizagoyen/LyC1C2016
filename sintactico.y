@@ -318,16 +318,52 @@ condition:
     | comparation AND_OPERATOR comparation
     | comparation OR_OPERATOR comparation
     | NOT comparation
-  
+ 
 if:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF
-  
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
+		  char aux[10];
+		  insert_polish("");
+		  struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index));
+		  p->element = strdup(&aux[0]);
+		  push_stack(last_element_polish);	
+	  } ENDIF
+ 
 if_else:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF
-
-while:
-      WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
+		  char aux[10];
+		  insert_polish("");
+		  struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index + 2));
+		  p->element = strdup(&aux[0]);
+		  push_stack(last_element_polish);
+		  insert_polish("BI");
+	  } ELSE sentences {
+		  char aux[10];
+		  insert_polish("");
+		  struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index));
+		  p->element = strdup(&aux[0]);
+		  push_stack(last_element_polish);		  
+	  } ENDIF
   
+while:
+      {
+		  insert_polish("");
+		  push_stack(last_element_polish);
+	  } WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
+		  char aux[10];
+		  insert_polish("");
+		  struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index+2));
+		  p->element = strdup(&aux[0]);
+		  p = pop_stack();
+          sprintf(aux, "%d", (polish_index));
+		  p->element = strdup(&aux[0]);
+		  insert_polish(p->element);
+		  insert_polish("BI");
+	  } ENDWHILE 
+
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
