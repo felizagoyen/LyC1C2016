@@ -27,7 +27,7 @@ typedef struct Polish {
 } struct_polish;
 
 typedef struct Stack {
-	void * element;
+	struct_polish *element;
 	struct Stack *previous; 
 } struct_stack;
 
@@ -52,14 +52,13 @@ void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
 void validate_assignament_type(char *);
-void insert_polish(void *);
+void insert_polish(char *);
 void create_intermediate_file();
 void create_equals_condition();
 void create_all_equals_pivote();
 void create_all_equals_condition();
-void push_stack(void *); 
-void * pop_stack();
-void * peek_stack();
+void push_stack(struct_polish *); 
+struct_polish *pop_stack();
 
 %}
 %union {
@@ -273,41 +272,43 @@ comparation:
       expression GREATER_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BLT");
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BLE");
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BGT");
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BGE");
         }
     | expression EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BNE");
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+          insert_polish("");
+          push_stack(last_element_polish);
           insert_polish("BEQ");
         }
   
@@ -670,7 +671,7 @@ void validate_assignament_type(char *var_name) {
   ids_count=-1;
 }
 
-void insert_polish(void * element) {
+void insert_polish(char * element) {
   struct_polish *p = malloc(sizeof(struct_polish)); 
   p->element = element;
   p->next = NULL;
@@ -733,30 +734,22 @@ void create_all_equals_condition() {
   
 }
 
-void push_stack(void * element) {
-	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
-	  ne->element = element;
-		if(top_element_stack) {
-			ne->previous = top_element_stack;		
-		}
-		else {
-		 ne->previous = NULL;
-		}
-		top_element_stack = ne;
+void push_stack(struct_polish *element) {
+  struct_stack *ne = malloc(sizeof(struct_stack)); //new element
+  ne->element = element;
+  if(top_element_stack) {
+    ne->previous = top_element_stack;		
+  } else {
+    ne->previous = NULL;
+  }
+  top_element_stack = ne;
 }
 
-void * pop_stack() {
-	struct_stack * aux;
-	int * top = top_element_stack->element;
-	aux = top_element_stack;
-	top_element_stack = top_element_stack->previous;
-	free(aux);
-	return top;
-}
-
-void * peek_stack() {
-	if(top_element_stack) {
-		return top_element_stack->element;
-	}
-	return NULL;
+struct_polish *pop_stack() {
+  struct_stack * aux;
+  struct_polish * top = top_element_stack->element;
+  aux = top_element_stack;
+  top_element_stack = top_element_stack->previous;
+  free(aux);
+  return top;
 }
