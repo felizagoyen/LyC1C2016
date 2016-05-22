@@ -60,6 +60,7 @@ char types_validations[30][10];
 int all_equals_pivote_index = 1;
 int all_equals_to_compare_index = 1;
 int all_equals_stack = 0;
+char while_start[10];
 
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
@@ -385,6 +386,7 @@ if_else:
 while:
       WHILE 
         {
+          sprintf(while_start, "%d", polish_index);
         }
        OPEN_PARENTHESIS condition 
         {
@@ -396,9 +398,7 @@ while:
           struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index+2));
           p->element = strdup(&aux[0]); //escribe pos de salto condicional
-          p = pop_stack();
-          last_element_polish->element = p->element;	//escribe pos de salto incondicional
-          insert_polish("");  
+          insert_polish(strdup(&while_start[0]));
           insert_polish("BI");
         } 
       ENDWHILE 	  
