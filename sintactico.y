@@ -46,6 +46,7 @@ char ids_type[30][10];
 
 int all_equals_pivote_index = 1;
 int all_equals_to_compare_index = 1;
+int all_equals_stack = 0;
 
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
@@ -330,10 +331,19 @@ while:
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
+          char aux[10];
+          int i = 0;
+          for(i; i < all_equals_stack; i++) {
+            struct_polish *p = pop_stack();
+            sprintf(aux, "%d", (polish_index + 3));
+            p->element = strdup(&aux[0]);
+          }
           insert_polish("True");
-          insert_polish("");
+          sprintf(aux, "%d", (polish_index + 3));
+          insert_polish(strdup(&aux[0]));
           insert_polish("BI");
           insert_polish("False");
+          all_equals_stack = 0;
         }
 
 expressions_list_all_equals_to_compare:
@@ -358,33 +368,11 @@ expressions_list_all_equals_to_compare:
 expression_list_all_equals_to_compare:
       expression_list_all_equals_to_compare COMA_SEPARATOR expression
         {
-          if(all_equals_to_compare_index >= all_equals_pivote_index) {
-            LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
-            exit(1);
-          }
-          char str[10], aux[20] = "_allEqualsPivot";
-          sprintf(str, "%d", all_equals_to_compare_index);
-          strcat(aux, str);
-          insert_polish(strdup(&aux[0]));
-          insert_polish("CMP");
-          insert_polish("");
-          insert_polish("BNE");
-          all_equals_to_compare_index++;
+          create_all_equals_condition();
         }
     | expression
         {
-          if(all_equals_to_compare_index >= all_equals_pivote_index) {
-            LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
-            exit(1);
-          }
-          char str[10], aux[20] = "_allEqualsPivot";
-          sprintf(str, "%d", all_equals_to_compare_index);
-          strcat(aux, str);
-          insert_polish(strdup(&aux[0]));
-          insert_polish("CMP");
-          insert_polish("");
-          insert_polish("BNE");
-          all_equals_to_compare_index++;
+          create_all_equals_condition();
         }
 
 expression_list_all_equals_pivote:
@@ -734,7 +722,20 @@ void create_all_equals_pivote() {
 }
 
 void create_all_equals_condition() {
-  
+  if(all_equals_to_compare_index >= all_equals_pivote_index) {
+    LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
+    exit(1);
+  }
+  char str[10], aux[20] = "_allEqualsPivot";
+  sprintf(str, "%d", all_equals_to_compare_index);
+  strcat(aux, str);
+  insert_polish(strdup(&aux[0]));
+  insert_polish("CMP");
+  insert_polish("");
+  push_stack(last_element_polish);
+  all_equals_stack++;
+  insert_polish("BNE");
+  all_equals_to_compare_index++;  
 }
 
 void push_stack(struct_polish *element) {
