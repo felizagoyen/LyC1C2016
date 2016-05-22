@@ -35,7 +35,7 @@ FILE  *yyin;
 char *yytext;
 int var_count = 0;
 int ids_count = -1;
-int polish_index=0;
+int polish_index = 1;
 struct_polish *polish;
 struct_polish *last_element_polish;
 struct_stack *top_element_stack = NULL;
@@ -681,8 +681,9 @@ void insert_polish(char * element) {
   } else {
     polish = p;
   }
-    last_element_polish = p;
-    polish_index++;
+
+  last_element_polish = p;
+  polish_index++;
 }
 
 void create_intermediate_file() {
@@ -710,9 +711,11 @@ void create_intermediate_file() {
 }
 
 void create_equals_condition() {
+  char aux[10];
   insert_polish("_igualesPivot");
   insert_polish("CMP");
-  insert_polish("");
+  sprintf(aux, "%d", (polish_index + 7));
+  insert_polish(strdup(&aux[0]));
   insert_polish("BNE");
   insert_polish("1");
   insert_polish("+");
