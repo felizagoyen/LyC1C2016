@@ -8,7 +8,6 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "y.tab.h"
 
@@ -27,6 +26,11 @@ typedef struct Polish {
   char *element;
 } struct_polish;
 
+typedef struct Stack {
+	void * element;
+	struct Stack *previous; 
+} struct_stack;
+
 FILE  *yyin;
 char *yytext;
 int var_count=0;
@@ -34,6 +38,7 @@ int ids_count=-1;
 int polish_index=0;
 struct_polish *polish;
 struct_polish *last_element_polish;
+struct_stack *top_element_stack = NULL;
 
 char var_name[30][10];
 char var_type[30][10];
@@ -44,8 +49,11 @@ void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
 void validate_assignament_type(char *);
-void insert_polish(char *);
+void insert_polish(void *);
 void create_intermediate_file();
+void push_stack(void *); 
+void * pop_stack();
+void * peek_stack();
 
 %}
 %union {
@@ -127,7 +135,7 @@ variable_type:
 sentence:
       assignment
         {
-          LOG_MSG("Asinación");
+          LOG_MSG("Asignación");
         }
     | if
         {
@@ -270,26 +278,36 @@ comparation:
     | expressions GREATER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  insert_polish(last_element_polish);
+		  push_stack(last_element_polish);
           insert_polish("BLE");
         }
     | expressions SMALLER_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  insert_polish(last_element_polish);
+		  push_stack(last_element_polish);
           insert_polish("BGT");
         }
     | expressions SMALLER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  insert_polish(last_element_polish);
+		  push_stack(last_element_polish);
           insert_polish("BGE");
         }
     | expressions EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  insert_polish(last_element_polish);
+		  push_stack(last_element_polish);
           insert_polish("BNE");
         }
     | expressions NOT_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  insert_polish(last_element_polish);
+		  push_stack(last_element_polish);
           insert_polish("BEQ");
         }
   
@@ -568,7 +586,7 @@ void validate_assignament_type(char *var_name) {
   ids_count=-1;
 }
 
-void insert_polish(char * element) {
+void insert_polish(void * element) {
   struct_polish *p = malloc(sizeof(struct_polish)); 
   p->element = element;
   p->next = NULL;
@@ -599,4 +617,30 @@ void create_intermediate_file() {
 
   // closes file
   fclose(code_file); 
+}
+
+void push_stack(void * element) {
+	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
+	  ne->element = element;
+		if(top_element_stack) {
+			ne->previous = top_element_stack;		
+		}
+		else {
+		 ne->previous = NULL;
+		}
+		top_element_stack = ne;
+}
+void * pop_stack() {
+	struct_stack * aux;
+	int * top = top_element_stack->element;
+	aux = top_element_stack;
+	top_element_stack = top_element_stack->previous;
+	free(aux);
+	return top;
+}
+void * peek_stack() {
+	if(top_element_stack) {
+		return top_element_stack->element;
+	}
+	return NULL;
 }
