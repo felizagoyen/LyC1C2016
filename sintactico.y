@@ -51,9 +51,8 @@ void save_type_id(char *);
 void validate_assignament_type(char *);
 void insert_polish(char *);
 void create_intermediate_file();
-void push_stack(struct_polish *); 
-void * pop_stack();
-void * peek_stack();
+void push_stack(struct_polish); 
+struct_polish pop_stack();
 
 %}
 %union {
@@ -273,42 +272,43 @@ comparation:
       expressions GREATER_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BLT");
         }
     | expressions GREATER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BLE");
         }
     | expressions SMALLER_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BGT");
         }
     | expressions SMALLER_THAN_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BGE");
         }
     | expressions EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BNE");
         }
     | expressions NOT_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
-		  insert_polish(last_element_polish);
-		  push_stack(last_element_polish);
+		  insert_polish("");
+		  push_stack(*last_element_polish);
           insert_polish("BEQ");
         }
   
@@ -620,7 +620,7 @@ void create_intermediate_file() {
   fclose(code_file); 
 }
 
-void push_stack(void element) {
+void push_stack(struct_polish element) {
 	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
 	  ne->element = element;
 		if(top_element_stack) {
@@ -631,17 +631,11 @@ void push_stack(void element) {
 		}
 		top_element_stack = ne;
 }
-void * pop_stack() {
+struct_polish pop_stack() {
 	struct_stack * aux;
-	void * top = top_element_stack->element;
+	struct_polish top = top_element_stack->element;
 	aux = top_element_stack;
 	top_element_stack = top_element_stack->previous;
 	free(aux);
 	return top;
-}
-void * peek_stack() {
-	if(top_element_stack) {
-		return top_element_stack->element;
-	}
-	return NULL;
 }
