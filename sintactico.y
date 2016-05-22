@@ -74,7 +74,7 @@ void push_stack(struct_polish *);
 struct_polish *pop_stack();
 void create_assembler_header();
 void create_ts_file();  
-
+void validate_condition_type();
 %}
 %union {
     char* str_value;
@@ -832,7 +832,23 @@ void create_assembler_header() {
   
   fprintf(assembler_file, ".MODEL LARGE\n");
   fprintf(assembler_file, ".386\n");
-  fprintf(assembler_file, ".STACK 200h\n");
+  fprintf(assembler_file, ".STACK 200h\n\n");
   fprintf(assembler_file, ".DATA\n");
 
+  struct_ts *p = ts;
+
+}
+
+void validate_conditions_types() {
+  int x = 0;
+  char type[10] = "NUMBER";
+  for(x; x <= types_validations_count; x++) {
+    printf("%s - %s", type, types_validations[x]); 
+    if(strcmp(type, types_validations[x]) != 0) {
+      printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
+      exit(1);
+    }
+  }
+  
+  types_validations_count = -1;
 }
