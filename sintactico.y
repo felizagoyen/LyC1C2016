@@ -27,7 +27,7 @@ typedef struct Polish {
 } struct_polish;
 
 typedef struct Stack {
-	void * element;
+	struct_polish element;
 	struct Stack *previous; 
 } struct_stack;
 
@@ -49,9 +49,9 @@ void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
 void validate_assignament_type(char *);
-void insert_polish(void *);
+void insert_polish(char *);
 void create_intermediate_file();
-void push_stack(void *); 
+void push_stack(struct_polish *); 
 void * pop_stack();
 void * peek_stack();
 
@@ -273,6 +273,7 @@ comparation:
       expressions GREATER_EQUALS_OPERATOR expressions
         { 
           insert_polish("CMP");
+		  
           insert_polish("BLT");
         }
     | expressions GREATER_THAN_OPERATOR expressions
@@ -586,7 +587,7 @@ void validate_assignament_type(char *var_name) {
   ids_count=-1;
 }
 
-void insert_polish(void * element) {
+void insert_polish(char * element) {
   struct_polish *p = malloc(sizeof(struct_polish)); 
   p->element = element;
   p->next = NULL;
@@ -619,7 +620,7 @@ void create_intermediate_file() {
   fclose(code_file); 
 }
 
-void push_stack(void * element) {
+void push_stack(void element) {
 	struct_stack *ne = malloc(sizeof(struct_stack)); //new element
 	  ne->element = element;
 		if(top_element_stack) {
@@ -632,7 +633,7 @@ void push_stack(void * element) {
 }
 void * pop_stack() {
 	struct_stack * aux;
-	int * top = top_element_stack->element;
+	void * top = top_element_stack->element;
 	aux = top_element_stack;
 	top_element_stack = top_element_stack->previous;
 	free(aux);
