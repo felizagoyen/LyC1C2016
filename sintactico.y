@@ -340,6 +340,7 @@ condition:
     | comparation OR_OPERATOR comparation
     | NOT comparation
  
+ 
 if:
       IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
 		  char aux[10];
@@ -374,17 +375,14 @@ while:
 		  push_stack(last_element_polish);
 	  } WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences {
 		  char aux[10];
-		  insert_polish("");
 		  struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index+2));
-		  p->element = strdup(&aux[0]);
+		  p->element = strdup(&aux[0]); //escribe pos de salto condicional
 		  p = pop_stack();
-          sprintf(aux, "%d", (polish_index));
-		  p->element = strdup(&aux[0]);
-		  insert_polish(p->element);
+		  last_element_polish->element = p->element;	//escribe pos de salto incondicional
 		  insert_polish("BI");
-	  } ENDWHILE 
-
+	  } ENDWHILE 	  
+	  
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
