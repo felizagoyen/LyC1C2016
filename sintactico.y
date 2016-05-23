@@ -11,15 +11,25 @@
 #include <string.h>
 #include "y.tab.h"
 
-#define SYMBOL_TABLE_FILE "ts.txt"
+#define TS_FILE "ts.txt"
 #define CODE_FILE "intermedia.txt"
+#define ASSEMBLER_FILE "Final.txt"
 #define LOGGER 1
+#define STRING_MAX_LENGTH 32
 
 #if LOGGER
   #define LOG_MSG printf
 #else
   #define LOG_MSG(...)
 #endif
+
+typedef struct Ts {
+  struct Ts *next;
+  char *name;
+  char *type;
+  char *value; 
+  int length;
+} struct_ts;
 
 typedef struct Polish {
   struct Polish *next;
@@ -33,20 +43,24 @@ typedef struct Stack {
 
 FILE  *yyin;
 char *yytext;
+
+struct_ts *ts = NULL;
+struct_ts *last_ts = NULL;
 int var_count = 0;
-int ids_count = -1;
+int types_validations_count = -1;
 int polish_index = 1;
-struct_polish *polish;
-struct_polish *last_element_polish;
+struct_polish *polish = NULL;
+struct_polish *last_element_polish = NULL;
 struct_stack *top_element_stack = NULL;
 
 char var_name[30][10];
 char var_type[30][10];
-char ids_type[30][10];
+char types_validations[30][10];
 
 int all_equals_pivote_index = 1;
 int all_equals_to_compare_index = 1;
 int all_equals_stack = 0;
+char while_start[10];
 
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
@@ -60,7 +74,9 @@ void create_all_equals_pivote();
 void create_all_equals_condition();
 void push_stack(struct_polish *); 
 struct_polish *pop_stack();
-
+void create_assembler_header();
+void create_ts_file();  
+void validate_condition_type();
 %}
 %union {
     char* str_value;
@@ -68,7 +84,7 @@ struct_polish *pop_stack();
     int int_value;
 }
 
-%type <str_value> ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE
+%type <str_value> ID ASSIGNMENT_OPERATOR STRING_CTE INT_CTE REAL_CTE STRING_TYPE INTEGER_TYPE REAL_TYPE
 %type <str_value> ADDITION_OPERATOR SUBSTRACTION_OPERATOR MULTIPLICATION_OPERATOR DIVISION_OPERATOR CONCATENATION_OPERATOR
 %type <str_value> GREATER_THAN_OPERATOR GREATER_EQUALS_OPERATOR SMALLER_THAN_OPERATOR SMALLER_EQUALS_OPERATOR EQUALS_OPERATOR NOT_EQUALS_OPERATOR
 
@@ -127,20 +143,21 @@ declaration_list:
 variable_type:
       STRING_TYPE
           {
-            strcpy(var_type[var_count], yytext);
+            strcpy(var_type[var_count], $1);
           }
     | INTEGER_TYPE
           {
-            strcpy(var_type[var_count], yytext);
+            strcpy(var_type[var_count], $1);
           }
     | REAL_TYPE
           {
-            strcpy(var_type[var_count], yytext);
+            strcpy(var_type[var_count], $1);
           }
 
 sentence:
       assignment
         {
+          types_validations_count = -1;
           LOG_MSG("Asignación");
         }
     | if
@@ -227,10 +244,14 @@ factor:
         }
     | INT_CTE
         {
+          types_validations_count++;
+          strcpy(types_validations[types_validations_count], "NUMBER");
           insert_polish($1);
         }
     | REAL_CTE
         {
+          types_validations_count++;
+          strcpy(types_validations[types_validations_count], "NUMBER");
           insert_polish($1);
         }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
@@ -238,6 +259,8 @@ factor:
 string_concatenation:
       STRING_CTE
         {
+          types_validations_count++;
+          strcpy(types_validations[types_validations_count], "STRING");
           insert_polish($1);
         }
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
@@ -272,6 +295,7 @@ string_concatenation:
 comparation:
       expression GREATER_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -279,6 +303,7 @@ comparation:
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -286,6 +311,7 @@ comparation:
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -293,6 +319,7 @@ comparation:
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -300,6 +327,7 @@ comparation:
         }
     | expression EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -307,6 +335,7 @@ comparation:
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
+          validate_condition_type();
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
@@ -318,16 +347,59 @@ condition:
     | comparation AND_OPERATOR comparation
     | comparation OR_OPERATOR comparation
     | NOT comparation
-  
+ 
+ 
 if:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF
-  
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+        } 
+      ENDIF
+ 
 if_else:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF
-
-while:
-      WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index + 2));
+          p->element = strdup(&aux[0]);
+          insert_polish("");
+          push_stack(last_element_polish);
+          insert_polish("BI");
+        } 
+      ELSE sentences 
+        {
+          char aux[10];
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+          push_stack(last_element_polish);		  
+        } 
+      ENDIF
   
+while:
+      WHILE 
+        {
+          sprintf(while_start, "%d", polish_index);
+        }
+       OPEN_PARENTHESIS condition 
+        {
+          validate_condition_type();
+        }
+      CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", (polish_index+2));
+          p->element = strdup(&aux[0]); //escribe pos de salto condicional
+          insert_polish(strdup(&while_start[0]));
+          insert_polish("BI");
+        } 
+      ENDWHILE 	  
+	  
 all_equal:
       ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
@@ -416,18 +488,23 @@ expression_list_equals:
 read:
       READ ID
         {
+          insert_polish($2);
           insert_polish("READ");
+          types_validations_count = -1;
         }
 
 write:
       WRITE string_concatenation
         {
           insert_polish("WRITE");
+          types_validations_count = -1;
         }
     | WRITE ID
         {
+          insert_polish($2);
           insert_polish("WRITE");
           validate_var_type($2, "STRING");
+          types_validations_count = -1;
         }
 
 %%
@@ -439,11 +516,14 @@ int main(int argc,char *argv[]) {
     return -1;
   }
 
-  //Borro la tabla de simbolos si existe 
-  remove(SYMBOL_TABLE_FILE);
-  
   //Metodo que recorre el archivo de entrada
   yyparse();
+
+  //Genero archivo assembler
+  create_assembler_header();
+
+  //Genero el archivo de la tabla de simbolos
+  create_ts_file();
 
   //Genero el archivo intermedio
   create_intermediate_file();
@@ -465,106 +545,96 @@ int yyerror(void) {
  /*
   * Agrega a la tabla de simbolos constantes enteras reales y strings
   */
-void add_symbol_table(const char* token) {
-  FILE *ts_file;
-  char temp[512];
+void add_symbol_table(char* token) {
   char string_token[512] = "\0";
-
-  //Abro el archivo de la tabla de simbolos
-  if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
-    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
-    exit(1);
-  }
-
+  
   //Si no es un string, le coloco guion bajo delante
-  if(strcmp("STRING_CTE", token) != 0) {
-    strcpy(string_token, "_");
+  if(strcmp("STRING_CTE", token) == 0) {
+      yytext[strlen(yytext)-1] = '\0';
+      yytext++;
   }
+  strcpy(string_token, "_");
 
   //yytext tiene el lexema de la constante, lo concateno al guion bajo
-  strcat(string_token, yytext); 
-  
+  strcat(string_token, yytext);
+
   //Recorro el archivo para ver si ya fue ingresada la constante para no generar duplicados
-  while(fgets(temp, 512, ts_file) != NULL) {
-    if((strcmp(strtok(temp, "|" ), string_token)) == 0) {
-      fclose(ts_file); 
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, string_token) == 0) {
       return;
     }
+    p = p->next;
   }
 
-  //Genero un nuevo registro con el formato name|type|value
-  if(strcmp("REAL_CTE", token) == 0) {
-    fprintf(ts_file, "%s|%s|%f\n", string_token, token, atof(yytext));
+  struct_ts *aux = malloc(sizeof(struct_ts));
+  aux->name = strdup(&string_token[0]);
+  aux->type = strdup(token);
+  aux->value = strdup(yytext); 
+  aux->length = 0;
+  aux->next = NULL;
+
+  if(ts) {
+    last_ts->next = aux;
   } else {
-    fprintf(ts_file, "%s|%s|%s\n", string_token, token, yytext);
+    ts = aux;
   }
 
-  //Cierro el archivo de la tabla de simbolos
-  fclose(ts_file); 
+  last_ts = aux;
 }
 
  /*
   * Agrega a la tabla de simbolos las variables con sus tipos
   */
 void add_var_symbol_table() {
-  FILE *ts_file;
-  char temp[512];
   int x = 0;
-
-  //Abre la tabla de simbolos
-  if((ts_file = fopen(SYMBOL_TABLE_FILE, "a+")) == NULL) {
-    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
-    exit(1);
-  }
-
 
   for(x; x < var_count; x++) {
     //Si ya existe en la tabla de simbolos, lanzo un error
-    while(fgets(temp, 512, ts_file) != NULL) {
-      if((strcmp(strtok(temp, "|"), var_name[var_count-x-1])) == 0) {
+    struct_ts *p = ts;
+    while(p != NULL) {
+      if(strcmp(p->name, var_name[var_count-x-1]) == 0) {
         printf("\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
-        fclose(ts_file); 
         exit(1);
       }
+      p = p->next;
     }
 
     //Genero el registro en la tabla de simbolos
-    fprintf(ts_file, "%s|%s|\n", var_name[var_count-x-1], var_type[x]);
-    rewind(ts_file);
+    struct_ts *aux = malloc(sizeof(struct_ts));
+    aux->name = strdup(var_name[var_count-x-1]);
+    aux->type = strdup(var_type[x]);
+    aux->value = NULL;
+    aux->length = 0; 
+    aux->next = NULL;
+    if(ts != NULL) {
+      last_ts->next = aux;
+    } else {
+      ts = aux;
+    }
+    last_ts = aux;
   }
-
-  // closes file
-  fclose(ts_file); 
 }
 
  /*
   * Valida que el tipo de asignacion sea correcto
   */
 void validate_var_type(char * var_name, char * type) {
-  FILE *ts_file;
-  char temp[512];
   char is_valid_type = 2; //0 valido, 1 invalido, 2 no se encuentra declarada
 
-  //Abre la tabla de simbolos
-  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
-    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
-    exit(1);
-  }
-
   //Busco la variable en la tabla de simbolos
-  while(fgets(temp, 512, ts_file) != NULL) {
-    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
-      if(valid_type(type, strtok(NULL,"|")) == 0) {
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, var_name) == 0) {
+      if(valid_type(type, p->type) == 0) {
         is_valid_type = 0; // Tipo valido
       } else {
         is_valid_type = 1; // Tipo no valido
       }
       break;
     }
+    p = p->next;
   }
-
-  // closes file
-  fclose(ts_file); 
 
   //Si no es valido lanzo el mensaje de error correspondiente
   if(is_valid_type == 1) {
@@ -588,32 +658,23 @@ int valid_type(char * type, char * type_ts) {
 }
 
 void save_type_id(char *var_name) {
-  FILE *ts_file;
-  char temp[512];
   char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
 
-  //Abre la tabla de simbolos
-  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
-    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
-    exit(1);
-  }
-
   //Busco la variable en la tabla de simbolos
-  while(fgets(temp, 512, ts_file) != NULL) {
-    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
-      ids_count++;
-      if(strcmp(strtok(NULL,"|"), "string") == 0) {
-        strcpy(ids_type[ids_count], "STRING");
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, var_name) == 0) {
+      types_validations_count++;
+      if(strcmp(p->type, "string") == 0) {
+        strcpy(types_validations[types_validations_count], "STRING");
       } else {
-        strcpy(ids_type[ids_count], "NUMBER");
+        strcpy(types_validations[types_validations_count], "NUMBER");
       }
       is_valid_type = 0; // Tipo valido
       break;
     }
+    p = p->next;
   }
-
-  // closes file
-  fclose(ts_file); 
 
   //Si no es valido lanzo el mensaje de error correspondiente
   if(is_valid_type == 1) {
@@ -622,41 +683,59 @@ void save_type_id(char *var_name) {
   }
 }
 
-void validate_assignament_type(char *var_name) {
+void create_ts_file() {
   FILE *ts_file;
-  char temp[512];
+
+  //Abre el archivo de tabl de simbolo
+  if((ts_file = fopen(TS_FILE, "wt")) == NULL) {
+    printf("\nError al abrir el archivo de tabla de simbolos %s\n", TS_FILE);
+    exit(1);
+  }  
+
+  fprintf(ts_file, "             %-20s|       %-10s|                ", "Nombre", "Tipo");
+  fprintf(ts_file, "%-19s|  %s\n", "Valor", "Longitud");
+  fprintf(ts_file, "----------------------------------------------------");
+  fprintf(ts_file, "---------------------------------------------------\n");
+  while(ts) {
+    if(ts->value) {
+      fprintf(ts_file, "%-33s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, ts->value, ts->length);
+    } else {
+      fprintf(ts_file, "%-33s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, "", ts->length);
+    }
+    struct_ts *p = ts;
+    ts = ts->next;
+    free(p);
+  }
+
+  fclose(ts_file);
+}
+
+void validate_assignament_type(char *var_name) {
   char type[10];
   char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
   int x = 0;
 
-  //Abre la tabla de simbolos
-  if((ts_file = fopen(SYMBOL_TABLE_FILE, "rt")) == NULL) {
-    printf("\nError al abrir tabla de simbolos %s\n", SYMBOL_TABLE_FILE);
-    exit(1);
-  }
-
   //Busco la variable en la tabla de simbolos
-  while(fgets(temp, 512, ts_file) != NULL) {
-    if((strcmp(strtok(temp, "|"), var_name)) == 0) {
-      if(strcmp(strtok(NULL,"|"), "string") == 0) {
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, var_name) == 0) {
+      if(strcmp(p->type, "string") == 0) {
         strcpy(type, "STRING");
       } else {
         strcpy(type, "NUMBER");
       }
-      for(x; x <= ids_count; x++) {
-        if(strcmp(type, ids_type[x]) != 0) {
+      for(x; x <= types_validations_count; x++) {
+        if(strcmp(type, types_validations[x]) != 0) {
           printf("\nNo coincide el tipo de datos con la variable en la asignación\n");
           exit(1);
         }
       }
       break;
     }
+    p = p->next;
   }
 
-  // closes file
-  fclose(ts_file); 
-
-  ids_count=-1;
+  types_validations_count = -1;
 }
 
 void insert_polish(char * element) {
@@ -757,3 +836,55 @@ struct_polish *pop_stack() {
   free(aux);
   return top;
 }
+
+void create_assembler_header() {
+  FILE *assembler_file;
+  char value[32];
+  //Abre el archivo de assembler
+  if((assembler_file = fopen(ASSEMBLER_FILE, "wt")) == NULL) {
+    printf("\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
+    exit(1);
+  }
+  
+  fprintf(assembler_file, ".MODEL LARGE\n");
+  fprintf(assembler_file, ".386\n");
+  fprintf(assembler_file, ".STACK 200h\n\n");
+  fprintf(assembler_file, ".DATA\n\n");
+  fprintf(assembler_file, "STRINGMAXLENGTH equ %d\n\n", STRING_MAX_LENGTH);
+
+  struct_ts *p = ts;
+
+  while(p) {
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "real") == 0 || strcmp(p->type, "string") == 0) {
+      strcpy(value, "?");
+    } else {
+      strcpy(value, p->value);
+    }
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "INT_CTE") == 0
+      || strcmp(p->type, "real") == 0 || strcmp(p->type, "REAL_CTE") == 0) {
+      fprintf(assembler_file, "%s dd %s\n", p->name, value);
+    } else {
+      if(strcmp(value,"?") == 0) {
+        fprintf(assembler_file, "%s db STRINGMAXLENGTH dup(?),'$'\n", p->name);
+      } else {
+        fprintf(assembler_file, "%s db \"%s\",'$',%d dup(?)\n", p->name, value, (STRING_MAX_LENGTH - p->length));
+      }
+    }
+    p = p->next;
+  }
+
+}
+
+void validate_condition_type() {
+  int x = 0;
+  char type[10] = "NUMBER";
+  for(x; x <= types_validations_count; x++) {
+    if(strcmp(type, types_validations[x]) != 0) {
+      printf("\nNo es posible comparar tipos de datos del tipo string\n");
+      exit(1);
+    }
+  }
+  
+  types_validations_count = -1;
+}
+
