@@ -353,11 +353,9 @@ if:
       IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
         {
           char aux[10];
-          insert_polish("");
           struct_polish *p = pop_stack();
-          sprintf(aux, "%d", (polish_index));
+          sprintf(aux, "%d", polish_index);
           p->element = strdup(&aux[0]);
-          push_stack(last_element_polish);	
         } 
       ENDIF
  
@@ -365,19 +363,18 @@ if_else:
       IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
         {
           char aux[10];
-          insert_polish("");
           struct_polish *p = pop_stack();
           sprintf(aux, "%d", (polish_index + 2));
           p->element = strdup(&aux[0]);
+          insert_polish("");
           push_stack(last_element_polish);
           insert_polish("BI");
         } 
       ELSE sentences 
         {
           char aux[10];
-          insert_polish("");
           struct_polish *p = pop_stack();
-          sprintf(aux, "%d", (polish_index));
+          sprintf(aux, "%d", polish_index);
           p->element = strdup(&aux[0]);
           push_stack(last_element_polish);		  
         } 
