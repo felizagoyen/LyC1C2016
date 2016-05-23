@@ -15,7 +15,7 @@
 #define CODE_FILE "intermedia.txt"
 #define ASSEMBLER_FILE "Final.txt"
 #define LOGGER 1
-#define STRING_MAX_LENGTH 30
+#define STRING_MAX_LENGTH 31
 
 #if LOGGER
   #define LOG_MSG printf
@@ -38,7 +38,7 @@ typedef struct Polish {
 
 typedef struct Stack {
   struct_polish *element;
-	struct Stack *previous; 
+  struct Stack *previous; 
 } struct_stack;
 
 FILE  *yyin;
@@ -66,6 +66,7 @@ int comparation_number;
 int if_not = 0;
 
 void add_var_symbol_table();
+void add_symbol_table_aux(char *, char *);
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
@@ -80,6 +81,7 @@ struct_polish *pop_stack();
 void create_assembler_header();
 void create_ts_file();  
 void validate_condition_type();
+
 %}
 %union {
     char* str_value;
@@ -183,11 +185,6 @@ sentence:
         {
           LOG_MSG("\nSentencia WRITE");
         }
-    | all_equal
-        {
-          all_equals_pivote_index = 1;
-          LOG_MSG("\nSentencia ALLEQUALS");
-        }
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
@@ -214,7 +211,15 @@ assignment:
           LOG_MSG("\nSentencia #IGUALES");
           insert_polish($1);
           insert_polish($2);
-        }   
+        }
+    | ID ASSIGNMENT_OPERATOR all_equal
+        {
+          validate_var_type($1, "NUMBER");
+          LOG_MSG("\nSentencia ALLEQUALS");
+          insert_polish($1);
+          insert_polish($2);
+          all_equals_pivote_index = 1;
+        }      
 
 expression:
       expression ADDITION_OPERATOR term
@@ -521,11 +526,13 @@ iguales:
             insert_polish("0");
             insert_polish("_equalsCount");
             insert_polish(":=");  
+            add_symbol_table_aux("_equalsCount", "integer");
           }
       OPEN_PARENTHESIS expression
           {
             insert_polish("_equalsPivot");
             insert_polish(":=");
+            add_symbol_table_aux("_equalsCount", "integer");
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
@@ -634,6 +641,35 @@ void add_symbol_table(char* token) {
   } else {
     aux->length = 0;
   }
+  aux->next = NULL;
+
+  if(ts) {
+    last_ts->next = aux;
+  } else {
+    ts = aux;
+  }
+
+  last_ts = aux;
+}
+
+ /*
+  * Agrega variables auxiliares
+  */
+void add_symbol_table_aux(char *name, char *type) {
+  //Recorro el archivo para ver si ya fue ingresada la constante para no generar duplicados
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, name) == 0 && strcmp(p->type, type) == 0) {
+      return;
+    }
+    p = p->next;
+  }
+
+  struct_ts *aux = malloc(sizeof(struct_ts));
+  aux->name = strdup(name);
+  aux->type = strdup(type);
+  aux->value = NULL; 
+  aux->length = 0;
   aux->next = NULL;
 
   if(ts) {
@@ -859,6 +895,7 @@ void create_all_equals_pivote() {
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
   insert_polish(":=");
+  add_symbol_table_aux(strdup(&aux[0]), "integer");
   all_equals_pivote_index++;
 }
 
@@ -876,6 +913,7 @@ void create_all_equals_condition() {
   push_stack(last_element_polish);
   all_equals_stack++;
   insert_polish("BNE");
+  add_symbol_table_aux(strdup(&aux[0]), "integer");
   all_equals_to_compare_index++;  
 }
 
