@@ -37,7 +37,7 @@ typedef struct Polish {
 } struct_polish;
 
 typedef struct Stack {
-	struct_polish *element;
+  struct_polish *element;
 	struct Stack *previous; 
 } struct_stack;
 
@@ -63,7 +63,7 @@ int all_equals_to_compare_index = 1;
 int all_equals_stack = 0;
 char while_start[10];
 int comparation_number;
-int lines = 1;
+int if_not = 0;
 
 void add_var_symbol_table();
 void validate_var_type(char *, char *);
@@ -302,7 +302,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BLT");
+          if(if_not == 1) {
+            insert_polish("BGE");
+          } else {
+            insert_polish("BLT");
+          }
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
@@ -310,7 +314,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BLE");
+          if(if_not == 1) {
+            insert_polish("BGE");
+          } else {
+            insert_polish("BLE");
+          }
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
@@ -318,7 +326,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BGT");
+          if(if_not == 1) {
+            insert_polish("BLE");
+          } else {
+            insert_polish("BGT");
+          }
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
@@ -326,7 +338,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BGE");
+          if(if_not == 1) {
+            insert_polish("BLT");
+          } else {
+            insert_polish("BGE");
+          }
         }
     | expression EQUALS_OPERATOR expression
         { 
@@ -334,7 +350,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BNE");
+          if(if_not == 1) {
+            insert_polish("BEQ");
+          } else {
+            insert_polish("BNE");
+          }
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
@@ -342,7 +362,11 @@ comparation:
           insert_polish("CMP");
           insert_polish("");
           push_stack(last_element_polish);
-          insert_polish("BEQ");
+          if(if_not == 1) {
+            insert_polish("BNE");
+          } else {
+            insert_polish("BEQ");
+          }
         }
   
 condition:
@@ -358,9 +382,14 @@ condition:
         {
           comparation_number = 2;
         }
-    | NOT comparation
+    | NOT 
         {
-          comparation_number = 2;
+          if_not = 1;
+        }
+    comparation
+        {
+          comparation_number = 1;
+          if_not = 0;
         }
  
  
@@ -404,7 +433,11 @@ if_else:
 while:
       WHILE 
         {
-          sprintf(while_start, "%d", polish_index);
+          char aux[10];
+          struct_polish *p = malloc(sizeof(struct_polish)); 
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+          push_stack(p);
         }
        OPEN_PARENTHESIS condition 
         {
@@ -419,7 +452,8 @@ while:
             sprintf(aux, "%d", (polish_index+2));
             p->element = strdup(&aux[0]); //escribe pos de salto condicional
           }
-          insert_polish(strdup(&while_start[0]));
+          struct_polish *a = pop_stack();
+          insert_polish(strdup(a->element));
           insert_polish("BI");
         } 
       ENDWHILE 	  
@@ -434,11 +468,11 @@ all_equal:
             sprintf(aux, "%d", (polish_index + 3));
             p->element = strdup(&aux[0]);
           }
-          insert_polish("True");
+          insert_polish("1");
           sprintf(aux, "%d", (polish_index + 3));
           insert_polish(strdup(&aux[0]));
           insert_polish("BI");
-          insert_polish("False");
+          insert_polish("0");
           all_equals_stack = 0;
         }
 
