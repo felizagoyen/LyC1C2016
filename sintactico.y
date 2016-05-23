@@ -105,7 +105,7 @@ void validate_condition_type();
 program:
       lines
         {
-          LOG_MSG("\nCompilación exitosa\n");
+          LOG_MSG("\n\nCompilación exitosa\n");
         }
 
 lines:
@@ -161,32 +161,32 @@ sentence:
       assignment
         {
           types_validations_count = -1;
-          LOG_MSG("Asignación");
+          LOG_MSG("\nAsignación");
         }
     | if
         {
-          LOG_MSG("Sentencia IF");
+          LOG_MSG("\nSentencia IF");
         }
     | if_else
         {
-          LOG_MSG("Sentencia IF ELSE");
+          LOG_MSG("\nSentencia IF ELSE");
         }
     | while
         {
-          LOG_MSG("Sentencia WHILE");
+          LOG_MSG("\nSentencia WHILE");
         }
     | read
         {
-          LOG_MSG("Sentencia READ");
+          LOG_MSG("\nSentencia READ");
         }
     | write
         {
-          LOG_MSG("Sentencia WRITE");
+          LOG_MSG("\nSentencia WRITE");
         }
     | all_equal
         {
           all_equals_pivote_index = 1;
-          LOG_MSG("Sentencia ALLEQUALS");
+          LOG_MSG("\nSentencia ALLEQUALS");
         }
 
 assignment:
@@ -211,7 +211,7 @@ assignment:
     | ID ASSIGNMENT_OPERATOR iguales
         {
           validate_var_type($1, "NUMBER");
-          LOG_MSG("Sentencia #IGUALES");
+          LOG_MSG("\nSentencia #IGUALES");
           insert_polish($1);
           insert_polish($2);
         }   
@@ -447,7 +447,7 @@ expressions_list_all_equals_to_compare:
       expression_list_all_equals_to_compare
         {
           if(all_equals_to_compare_index < all_equals_pivote_index) {
-            LOG_MSG("La lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            LOG_MSG("\n\nLa lista tiene menor cantidad de elementos que el pivote en all equals\n");
             exit(1);
           }
           all_equals_to_compare_index = 1;
@@ -455,7 +455,7 @@ expressions_list_all_equals_to_compare:
     | expression_list_all_equals_to_compare
         {
           if(all_equals_to_compare_index < all_equals_pivote_index) {
-            LOG_MSG("La lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            LOG_MSG("\n\nLa lista tiene menor cantidad de elementos que el pivote en all equals\n");
             exit(1);
           }
           all_equals_to_compare_index = 1;
@@ -536,7 +536,7 @@ write:
 int main(int argc,char *argv[]) {
   //Abro el archivo de entrada que se desea compilar
   if((yyin = fopen( argv[1], "rt")) == NULL) {
-    printf("\nError al abrir %s\n", argv[1]);
+    printf("\n\nError al abrir %s\n", argv[1]);
     return -1;
   }
 
@@ -622,7 +622,7 @@ void add_var_symbol_table() {
     struct_ts *p = ts;
     while(p != NULL) {
       if(strcmp(p->name, var_name[var_count-x-1]) == 0) {
-        printf("\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
+        printf("\n\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
         exit(1);
       }
       p = p->next;
@@ -666,10 +666,10 @@ void validate_var_type(char * var_name, char * type) {
 
   //Si no es valido lanzo el mensaje de error correspondiente
   if(is_valid_type == 1) {
-    printf("\nLinea %d. No coinciden los tipos de datos.\n", yylineno);
+    printf("\n\nLinea %d. No coinciden los tipos de datos.\n", yylineno);
     exit(1);
   } else if(is_valid_type == 2) {
-    printf("\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
     exit(1);
   }
 
@@ -706,7 +706,7 @@ void save_type_id(char *var_name) {
 
   //Si no es valido lanzo el mensaje de error correspondiente
   if(is_valid_type == 1) {
-    printf("\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
     exit(1);
   }
 }
@@ -716,7 +716,7 @@ void create_ts_file() {
 
   //Abre el archivo de tabl de simbolo
   if((ts_file = fopen(TS_FILE, "wt")) == NULL) {
-    printf("\nError al abrir el archivo de tabla de simbolos %s\n", TS_FILE);
+    printf("\n\nError al abrir el archivo de tabla de simbolos %s\n", TS_FILE);
     exit(1);
   }  
 
@@ -754,7 +754,7 @@ void validate_assignament_type(char *var_name) {
       }
       for(x; x <= types_validations_count; x++) {
         if(strcmp(type, types_validations[x]) != 0) {
-          printf("\nLinea %d. No coinciden los tipos de datos\n", yylineno);
+          printf("\n\nLinea %d. No coinciden los tipos de datos\n", yylineno);
           exit(1);
         }
       }
@@ -786,7 +786,7 @@ void create_intermediate_file() {
   struct_polish *p, *next;
   //Abre el archivo de codigo intermedio
   if((code_file = fopen(CODE_FILE, "wt")) == NULL) {
-    printf("\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
+    printf("\n\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
     exit(1);
   }
 
@@ -830,7 +830,7 @@ void create_all_equals_pivote() {
 
 void create_all_equals_condition() {
   if(all_equals_to_compare_index >= all_equals_pivote_index) {
-    LOG_MSG("La lista tiene mayor cantidad de elementos que el pivote en all equals\n");
+    LOG_MSG("\n\nLa lista tiene mayor cantidad de elementos que el pivote en all equals\n");
     exit(1);
   }
   char str[10], aux[20] = "_allEqualsPivot";
@@ -870,7 +870,7 @@ void create_assembler_header() {
   char value[32];
   //Abre el archivo de assembler
   if((assembler_file = fopen(ASSEMBLER_FILE, "wt")) == NULL) {
-    printf("\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
+    printf("\n\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
     exit(1);
   }
   
@@ -912,7 +912,7 @@ void validate_condition_type() {
   char type[10] = "NUMBER";
   for(x; x <= types_validations_count; x++) {
     if(strcmp(type, types_validations[x]) != 0) {
-      printf("\nLinea %d. No es posible comparar datos del tipo string\n", yylineno);
+      printf("\n\nLinea %d. No es posible comparar datos del tipo string\n", yylineno);
       exit(1);
     }
   }
