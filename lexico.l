@@ -22,6 +22,7 @@
 void string_validation(char *);
 void int_range_validation(char *);
 void real_range_validation(char *);
+void id_name_validation(char *);
 
 %}
 
@@ -32,7 +33,7 @@ DIGIT               [0-9]
 CHARACTER           [a-zA-Z]
 INT_CTE             {DIGIT}+
 REAL_CTE            {DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}+|{DIGIT}+\.{DIGIT}*
-STRING_CTE          \"(\\.|[^"|\|])*\"
+STRING_CTE          \"(\\.|[^"])*\"
 ID                  {CHARACTER}({CHARACTER}|{DIGIT}|_)*
 COMMENT             -\/.*\/-
 
@@ -41,9 +42,9 @@ COMMENT             -\/.*\/-
 {COMMENT}           { LOG_MSG("COMMENT"); }
 "DIM"               { LOG_MSG("DIM"); return DIM; }
 "AS"                { LOG_MSG("AS"); return AS; }
-"string"            { LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
-"integer"           { LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
-"real"              { LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
+"string"            { yylval.str_value=strdup(yytext); LOG_MSG("STRING_TYPE"); return STRING_TYPE; }
+"integer"           { yylval.str_value=strdup(yytext); LOG_MSG("INTEGER_TYPE"); return INTEGER_TYPE; }
+"real"              { yylval.str_value=strdup(yytext); LOG_MSG("REAL_TYPE"); return REAL_TYPE; }
 "AllEqual"          { LOG_MSG("ALL_EQUAL"); return ALL_EQUAL; }
 "#Iguales"          { LOG_MSG("IGUALES"); return IGUALES; }
 "IF"                { LOG_MSG("IF"); return IF; }
@@ -76,9 +77,19 @@ COMMENT             -\/.*\/-
 {INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
 {REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
 {STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
-{ID}                { yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
-
+{ID}                { id_name_validation(yytext); yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
+"\n"                { yylineno; }
 %%
+
+/*
+ * valida la cantidad de caracteres de los ids
+ */
+void id_name_validation(char * id) {
+  if(strlen(id) > 30) {
+    printf("Los ids solo pueden tener 30 caracteres en el nombre\n");
+    exit(1);
+  }
+}
 
 /*
  * Valida la cantidad de caracteres de los strings
@@ -91,7 +102,7 @@ void string_validation(char * string) {
   if(string[count]=='"') {
     return;
   } else if(count > STRING_MAX_LENGTH){
-    printf("String index out of bounds\n");
+    printf("Rango excedido de los strings\n");
     exit(1);
   }
 }
@@ -116,7 +127,7 @@ void int_range_validation(char * number) {
       return;
     }
   }
-  printf("Number out of range\n");
+  printf("Rango excedido de los enteros\n");
   exit(-1);
 }
 
@@ -138,7 +149,7 @@ void real_range_validation(char * number) {
     }
   }
   if(integer_part>(3.402823466*pow(10,38))) { //verifica que la parte entera se encuentre dentro del rango correspondiente
-    printf("Number out of range\n");
+    printf("Rango excedido de los reales\n");
     exit(1);
   }
   count+=2;
@@ -147,7 +158,7 @@ void real_range_validation(char * number) {
     count++;
   }
   if(number_of_decimals>6) {  //verifica que no se exceda de la cantidad de decimales permitidos
-    printf("Number out of range\n");
+    printf("Rango excedido de los reales\n");
     exit(1);
   }
 } 
