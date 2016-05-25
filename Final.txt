@@ -9,4 +9,4 @@ STRINGMAXLENGTH equ 31
 a dd ?
 b dd ?
 c dd ?
-_Conicion multiple con or db "Conicion multiple con or",'$',7 dup(?)
+_Conicion_multiple_con_or db "Conicion multiple con or",'$',7 dup(?)

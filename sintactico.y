@@ -660,7 +660,13 @@ void add_symbol_table(char* token) {
   aux->type = strdup(token);
   aux->value = strdup(yytext); 
   if(strcmp("STRING_CTE", token) == 0) {
+    int x = 0;
     aux->length = strlen(yytext);
+    for(x; x < aux->length; x++) {
+      if(aux->name[x] == ' '){
+        aux->name[x] = '_';
+      }
+    }
   } else {
     aux->length = 0;
   }
