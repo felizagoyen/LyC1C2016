@@ -74,6 +74,48 @@ IF(NOT h == b)
 	WRITE "Condicion negada"
 ENDIF
 
+-/ Prueba anidamiento IF-WHILE /-
+IF(NOT h == b) 
+	WHILE(NOT f == b)
+		WRITE "Anidamiento IF-WHILE"
+	ENDWHILE
+ENDIF
+
+-/ Prueba anidamiento WHILE-IF /-
+WHILE(h => b) 
+	IF(NOT f <= b)
+		WRITE "Anidamiento WHILE-IF"
+	ENDIF
+ENDWHILE
+
+-/ Prueba anidamiento WHILE-WHILE /-
+WHILE(b < c) 
+	WHILE(NOT c != f)
+		WRITE "Anidamiento WHILE-WHILE"
+	ENDWHILE
+ENDWHILE
+
+-/ Prueba anidamiento IF-IF /-
+IF(h => b) 
+	IF(NOT f <= b)
+		WRITE "Anidamiento IF-IF"
+	ELSE
+		WRITE "Anidamiento IF-IF-ELSE"
+	ENDIF
+ELSE
+	IF(NOT f <= b)
+		h := 4 + 1
+		IF(NOT f <= b)
+			WRITE "Anidamiento IF-IF"
+		ELSE
+			WRITE "Anidamiento IF-IF-ELSE"
+		ENDIF
+	ELSE
+		h := 4 - 11
+		WRITE "Anidamiento IF-IF-ELSE"
+	ENDIF
+ENDIF
+
 -/ Temas Especiales /-
 IF(NOT AllEqual([1,2,4],[1,2,3],[1/5,55,2+3*4])) 
 	WRITE "Condicion negada"

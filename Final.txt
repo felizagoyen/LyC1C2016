@@ -47,12 +47,17 @@ _int_0 dd 0.000000
 _str_Condicion_multiple_con_and db "Condicion multiple con and",'$',5 dup(?)
 _str_Condicion_multiple_con_or db "Condicion multiple con or",'$',6 dup(?)
 _str_Condicion_negada db "Condicion negada",'$',15 dup(?)
+_str_Anidamiento_IF_WHILE db "Anidamiento IF-WHILE",'$',11 dup(?)
+_str_Anidamiento_WHILE_IF db "Anidamiento WHILE-IF",'$',11 dup(?)
+_str_Anidamiento_WHILE_WHILE db "Anidamiento WHILE-WHILE",'$',8 dup(?)
+_str_Anidamiento_IF_IF db "Anidamiento IF-IF",'$',14 dup(?)
+_str_Anidamiento_IF_IF_ELSE db "Anidamiento IF-IF-ELSE",'$',9 dup(?)
+_int_4 dd 4.000000
+_int_11 dd 11.000000
 _allEqualsResults dd ?
 _allEqualsPivote1 dd ?
 _allEqualsPivote2 dd ?
-_int_4 dd 4.000000
 _allEqualsPivote3 dd ?
-_str_Condicion_negada db "Condicion negada",'$',15 dup(?)
 _equalsCount1 dd ?
 _equalsPivote1 dd ?
 _int_44 dd 44.000000

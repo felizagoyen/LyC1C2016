@@ -906,7 +906,7 @@ struct_ts *get_ts_element_by_value(char *value) {
 
 void add_ts_element(char * name, char *type, char *value) {
   struct_ts *aux = malloc(sizeof(struct_ts));
-  aux->name = strdup(replace_space_whit_underscore(name));
+  aux->name = strdup(name);
   aux->type = strdup(type);
 
   if(value != NULL) {
@@ -943,9 +943,10 @@ int add_symbol_table(char *name, char* type, char *value) {
     strcat(string_name, "_str_");
   } 
   strcat(string_name, name);
+  char *name_aux = replace_space_whit_underscore(string_name);
 
-  if(get_ts_element_by_name(string_name) == NULL) {
-    add_ts_element(&string_name[0], type, value);
+  if(get_ts_element_by_name(name_aux) == NULL) {
+    add_ts_element(name_aux, type, value);
     return 1;
   } else {
     return 0;
@@ -955,7 +956,7 @@ int add_symbol_table(char *name, char* type, char *value) {
 char *replace_space_whit_underscore(char * string) {
   int x = 0;
   for(x; x < strlen(string); x++) {
-    if(string[x] == ' '){
+    if(string[x] == ' ' || string[x] == '-'){
       string[x] = '_';
     }
   } 

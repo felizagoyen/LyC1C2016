@@ -41,12 +41,17 @@ _int_0                                     |  INT_CTE        |  0               
 _str_Condicion_multiple_con_and            |  STRING_CTE     |  Condicion multiple con and       |  26
 _str_Condicion_multiple_con_or             |  STRING_CTE     |  Condicion multiple con or        |  25
 _str_Condicion_negada                      |  STRING_CTE     |  Condicion negada                 |  16
+_str_Anidamiento_IF_WHILE                  |  STRING_CTE     |  Anidamiento IF-WHILE             |  20
+_str_Anidamiento_WHILE_IF                  |  STRING_CTE     |  Anidamiento WHILE-IF             |  20
+_str_Anidamiento_WHILE_WHILE               |  STRING_CTE     |  Anidamiento WHILE-WHILE          |  23
+_str_Anidamiento_IF_IF                     |  STRING_CTE     |  Anidamiento IF-IF                |  17
+_str_Anidamiento_IF_IF_ELSE                |  STRING_CTE     |  Anidamiento IF-IF-ELSE           |  22
+_int_4                                     |  INT_CTE        |  4                                |  0
+_int_11                                    |  INT_CTE        |  11                               |  0
 _allEqualsResults                          |  integer        |                                   |  0
 _allEqualsPivote1                          |  integer        |                                   |  0
 _allEqualsPivote2                          |  integer        |                                   |  0
-_int_4                                     |  INT_CTE        |  4                                |  0
 _allEqualsPivote3                          |  integer        |                                   |  0
-_str_Condicion_negada                      |  STRING_CTE     |  Condicion negada                 |  16
 _equalsCount1                              |  integer        |                                   |  0
 _equalsPivote1                             |  integer        |                                   |  0
 _int_44                                    |  INT_CTE        |  44                               |  0
