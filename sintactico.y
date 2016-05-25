@@ -366,6 +366,15 @@ comparation:
     | all_equal
         {
           LOG_MSG("\nSentencia ALLEQUALS");
+          insert_polish("1");
+          insert_polish("CMP");
+          insert_polish("");
+          push_stack(last_element_polish);
+          if(if_not == 1) {
+            insert_polish("BEQ");
+          } else {
+            insert_polish("BNE");
+          }
           all_equals_pivote_index = 1;
         }
 

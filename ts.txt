@@ -1,10 +1,13 @@
              Nombre              |       Tipo      |                Valor              |  Longitud
 -------------------------------------------------------------------------------------------------------
-a                                |  integer        |                                   |  0
+a                                |  string         |                                   |  0
 b                                |  integer        |                                   |  0
 c                                |  integer        |                                   |  0
 __equalsCount1                   |  integer        |                                   |  0
 __equalsPivot1                   |  integer        |                                   |  0
-__equalsCount2                   |  integer        |                                   |  0
-__equalsPivot2                   |  integer        |                                   |  0
-_15                              |  INT_CTE        |  15                               |  0
+_1                               |  INT_CTE        |  1                                |  0
+_allEqualsPivot1                 |  integer        |                                   |  0
+_2                               |  INT_CTE        |  2                                |  0
+_3                               |  INT_CTE        |  3                                |  0
+_4                               |  INT_CTE        |  4                                |  0
+_Conicion multiple con or        |  STRING_CTE     |  Conicion multiple con or         |  24

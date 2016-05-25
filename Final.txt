@@ -6,11 +6,14 @@
 
 STRINGMAXLENGTH equ 31
 
-a dd ?
+a db STRINGMAXLENGTH dup(?),'$'
 b dd ?
 c dd ?
 __equalsCount1 dd ?
 __equalsPivot1 dd ?
-__equalsCount2 dd ?
-__equalsPivot2 dd ?
-_15 dd 15.000000
+_1 dd 1.000000
+_allEqualsPivot1 dd ?
+_2 dd 2.000000
+_3 dd 3.000000
+_4 dd 4.000000
+_Conicion multiple con or db "Conicion multiple con or",'$',7 dup(?)
