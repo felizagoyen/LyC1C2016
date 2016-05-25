@@ -599,30 +599,14 @@ int yyerror(void) {
  /*
   * Valida que el tipo de asignacion sea correcto
   */
-void validate_var_type(char * var_name, char * type) {
-  char is_valid_type = 2; //0 valido, 1 invalido, 2 no se encuentra declarada
-
-  //Busco la variable en la tabla de simbolos
-  struct_ts *p = ts;
-  while(p) {
-    printf("%s\n", p->name);
-    if(strcmp(p->name, var_name) == 0) {
-      if(valid_type(type, p->type) == 0) {
-        is_valid_type = 0; // Tipo valido
-      } else {
-        is_valid_type = 1; // Tipo no valido
-      }
-      break;
-    }
-    p = p->next;
-  }
-
-  //Si no es valido lanzo el mensaje de error correspondiente
-  if(is_valid_type == 1) {
-    printf("\n\nLinea %d. No coinciden los tipos de datos.\n", yylineno);
+void validate_var_type(char * name, char * type) {
+  struct_ts *p = get_ts_element_by_name(name);
+  
+  if(p == NULL) {
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, name);
     exit(1);
-  } else if(is_valid_type == 2) {
-    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
+  } else if(valid_type(type, p->type) != 0) {
+    printf("\n\nLinea %d. No coinciden los tipos de datos.\n", yylineno);
     exit(1);
   }
 
@@ -639,28 +623,19 @@ int valid_type(char * type, char * type_ts) {
 }
 
 void save_type_id(char *var_name) {
-  char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
-
   //Busco la variable en la tabla de simbolos
-  struct_ts *p = ts;
-  while(p) {
-    if(strcmp(p->name, var_name) == 0) {
-      types_validations_count++;
-      if(strcmp(p->type, "string") == 0) {
-        strcpy(types_validations[types_validations_count], "STRING");
-      } else {
-        strcpy(types_validations[types_validations_count], "NUMBER");
-      }
-      is_valid_type = 0; // Tipo valido
-      break;
-    }
-    p = p->next;
-  }
+  struct_ts *p = get_ts_element_by_name(var_name);
 
-  //Si no es valido lanzo el mensaje de error correspondiente
-  if(is_valid_type == 1) {
+  if(p == NULL) {
     printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
     exit(1);
+  }
+
+  types_validations_count++;
+  if(strcmp(p->type, "string") == 0) {
+    strcpy(types_validations[types_validations_count], "STRING");
+  } else {
+    strcpy(types_validations[types_validations_count], "NUMBER");
   }
 }
 
@@ -912,7 +887,6 @@ struct_ts *get_ts_element_by_name(char *name) {
 void add_ts_element(char * name, char *type, char *value) {
   struct_ts *aux = malloc(sizeof(struct_ts));
 
-  printf("%s -------------- %s\n", name, value);
   aux->name = strdup(name);
   aux->type = strdup(type);
   if(value != NULL) {
