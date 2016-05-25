@@ -166,38 +166,24 @@ sentence:
       assignment
         {
           types_validations_count = -1;
-          LOG_MSG("\nAsignación");
         }
     | if
-        {
-          LOG_MSG("\nSentencia IF");
-        }
     | if_else
-        {
-          LOG_MSG("\nSentencia IF ELSE");
-        }
     | while
-        {
-          LOG_MSG("\nSentencia WHILE");
-        }
     | read
-        {
-          LOG_MSG("\nSentencia READ");
-        }
     | write
-        {
-          LOG_MSG("\nSentencia WRITE");
-        }
 
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
         {
+          LOG_MSG("Regla 10. assignment -> ID ASSIGNMENT_OPERATOR string_concatenation\n");
           validate_var_type($1, "STRING");
           insert_polish($1);
           insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR expression
         {
+          LOG_MSG("Regla 10. assignment -> ID ASSIGNMENT_OPERATOR expression");
           validate_assignament_type($1);
           insert_polish($1);
           insert_polish($2);
@@ -252,25 +238,25 @@ factor:
         }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
     | iguales
-        {
-          LOG_MSG("\nSentencia #IGUALES");
-        }
 
 string_concatenation:
       STRING_CTE
         {
+          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE\n");
           types_validations_count++;
           strcpy(types_validations[types_validations_count], "STRING");
           insert_polish($1);
         }
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
         {
+          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR STRING_CTE\n");
           insert_polish($1);
           insert_polish($3);
           insert_polish($2);
         }
     | STRING_CTE CONCATENATION_OPERATOR ID
         {
+          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR ID\n");
           validate_var_type($3, "STRING");
           insert_polish($1);
           insert_polish($3);
@@ -278,6 +264,7 @@ string_concatenation:
         }
     | ID CONCATENATION_OPERATOR STRING_CTE
         {
+          LOG_MSG("Regla 14. string_concatenation -> ID CONCATENATION_OPERATOR STRING_CTE\n");
           validate_var_type($1, "STRING");
           insert_polish($1);
           insert_polish($3);
@@ -285,6 +272,7 @@ string_concatenation:
         }
     | ID CONCATENATION_OPERATOR ID
         {
+          LOG_MSG("Regla 14. string_concatenation -> ID CONCATENATION_OPERATOR ID\n");
           validate_var_type($1, "STRING");
           validate_var_type($3, "STRING");
           insert_polish($1);
@@ -292,43 +280,70 @@ string_concatenation:
           insert_polish($2);
         }
 
-comparation:
-      expression GREATER_EQUALS_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BLT");
-        }
-    | expression GREATER_THAN_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BLE");
-        }
-    | expression SMALLER_EQUALS_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BGT");
-        }
-    | expression SMALLER_THAN_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BGE");
-        }
-    | expression EQUALS_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BNE");
-        }
-    | expression NOT_EQUALS_OPERATOR expression
-        { 
-          validate_condition_type();
-          create_block_condition("BEQ");
-        }
-    | all_equal
+if:
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF 
         {
-          insert_polish("1");
-          create_block_condition("BNE");
-          all_equals_pivote_index = 1;
+          LOG_MSG("Regla 15. if -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF\n");
+          char aux[10];
+          int x = 0;
+          for(x; x < comparation_number; x++) {
+            struct_polish *p = pop_stack();
+            sprintf(aux, "%d", polish_index);
+            p->element = strdup(&aux[0]);
+          }
+        } 
+ 
+if_else:
+      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
+        {
+          char aux[10];
+          int x = 0;
+          for(x; x < comparation_number; x++) {
+            struct_polish *p = pop_stack();
+            sprintf(aux, "%d", polish_index);
+            p->element = strdup(&aux[0]);
+          }
+          insert_polish("");
+          push_stack(last_element_polish);
+          insert_polish("BI");
+        } 
+      ELSE sentences ENDIF
+        {
+          LOG_MSG("Regla 16. if_elsee -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF\n");          
+          char aux[10];
+          struct_polish *p = pop_stack();
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+          push_stack(last_element_polish);		  
+        } 
+  
+while:
+      WHILE 
+        {
+          char aux[10];
+          struct_polish *p = malloc(sizeof(struct_polish)); 
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+          push_stack(p);
         }
+       OPEN_PARENTHESIS condition 
+        {
+          validate_condition_type();
+        }
+      CLOSE_PARENTHESIS sentences ENDWHILE 
+        {
+          LOG_MSG("Regla 17. while -> WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE\n");
+          char aux[10];
+          int x = 0;
+          for(x; x < comparation_number; x++) {
+            struct_polish *p = pop_stack();
+            sprintf(aux, "%d", (polish_index+2));
+            p->element = strdup(&aux[0]); //escribe pos de salto condicional
+          }
+          struct_polish *a = pop_stack();
+          insert_polish(strdup(a->element));
+          insert_polish("BI");
+        } 
 
 condition:
       comparation
@@ -359,72 +374,51 @@ condition:
           comparation_number = 1;
           if_not = 0;
         }
- 
- 
-if:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
-        {
-          char aux[10];
-          int x = 0;
-          for(x; x < comparation_number; x++) {
-            struct_polish *p = pop_stack();
-            sprintf(aux, "%d", polish_index);
-            p->element = strdup(&aux[0]);
-          }
-        } 
-      ENDIF
- 
-if_else:
-      IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences 
-        {
-          char aux[10];
-          int x = 0;
-          for(x; x < comparation_number; x++) {
-            struct_polish *p = pop_stack();
-            sprintf(aux, "%d", polish_index);
-            p->element = strdup(&aux[0]);
-          }
-          insert_polish("");
-          push_stack(last_element_polish);
-          insert_polish("BI");
-        } 
-      ELSE sentences 
-        {
-          char aux[10];
-          struct_polish *p = pop_stack();
-          sprintf(aux, "%d", polish_index);
-          p->element = strdup(&aux[0]);
-          push_stack(last_element_polish);		  
-        } 
-      ENDIF
-  
-while:
-      WHILE 
-        {
-          char aux[10];
-          struct_polish *p = malloc(sizeof(struct_polish)); 
-          sprintf(aux, "%d", polish_index);
-          p->element = strdup(&aux[0]);
-          push_stack(p);
-        }
-       OPEN_PARENTHESIS condition 
-        {
+
+comparation:
+      expression GREATER_EQUALS_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression GREATER_EQUALS_OPERATOR expression\n");
           validate_condition_type();
+          create_block_condition("BLT");
         }
-      CLOSE_PARENTHESIS sentences 
+    | expression GREATER_THAN_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression GREATER_THAN_OPERATOR expression\n");
+          validate_condition_type();
+          create_block_condition("BLE");
+        }
+    | expression SMALLER_EQUALS_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression SMALLER_EQUALS_OPERATOR expression\n");
+          validate_condition_type();
+          create_block_condition("BGT");
+        }
+    | expression SMALLER_THAN_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression SMALLER_THAN_OPERATOR expression\n");
+          validate_condition_type();
+          create_block_condition("BGE");
+        }
+    | expression EQUALS_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression EQUALS_OPERATOR expression\n");
+          validate_condition_type();
+          create_block_condition("BNE");
+        }
+    | expression NOT_EQUALS_OPERATOR expression
+        { 
+          LOG_MSG("Regla 19. comparation -> expression NOT_EQUALS_OPERATOR expression\n");
+          validate_condition_type();
+          create_block_condition("BEQ");
+        }
+    | all_equal
         {
-          char aux[10];
-          int x = 0;
-          for(x; x < comparation_number; x++) {
-            struct_polish *p = pop_stack();
-            sprintf(aux, "%d", (polish_index+2));
-            p->element = strdup(&aux[0]); //escribe pos de salto condicional
-          }
-          struct_polish *a = pop_stack();
-          insert_polish(strdup(a->element));
-          insert_polish("BI");
-        } 
-      ENDWHILE 	  
+          LOG_MSG("Regla 19. comparation -> all_equal\n");
+          insert_polish("1");
+          create_block_condition("BNE");
+          all_equals_pivote_index = 1;
+        }
 	  
 all_equal:
       ALL_EQUAL
@@ -436,6 +430,7 @@ all_equal:
         }
       OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
+          LOG_MSG("Regla 20. all_equal -> ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS\n");
           char aux[10];
           int i = 0;
           for(i; i < all_equals_stack; i++) {
@@ -515,6 +510,7 @@ iguales:
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
+            LOG_MSG("Regla 24. iguales -> IGUALES OPEN_PARENTHESIS expression COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS\n");
             char aux[10], counter_name[15] = "@equalsCount";
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
@@ -536,6 +532,7 @@ expression_list_equals:
 read:
       READ ID
         {
+          LOG_MSG("Regla 26. read -> READ ID\n");
           insert_polish($2);
           insert_polish("READ");
           types_validations_count = -1;
@@ -544,11 +541,13 @@ read:
 write:
       WRITE string_concatenation
         {
+          LOG_MSG("Regla 27. write -> WRITE string_concatenation\n");
           insert_polish("WRITE");
           types_validations_count = -1;
         }
     | WRITE ID
         {
+          LOG_MSG("Regla 27. write -> WRITE ID\n");
           insert_polish($2);
           insert_polish("WRITE");
           validate_var_type($2, "STRING");
