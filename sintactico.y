@@ -41,8 +41,7 @@ typedef struct Stack {
   struct Stack *previous; 
 } struct_stack;
 
-FILE  *yyin;
-char *yytext;
+FILE *yyin;
 extern int yylineno;
 
 struct_ts *ts = NULL;
@@ -66,8 +65,6 @@ int comparation_number;
 int if_not = 0;
 int iguales_index = 0;
 
-void add_var_symbol_table();
-void add_symbol_table_aux(char *, char *);
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
 void save_type_id(char *);
@@ -84,6 +81,9 @@ void create_ts_file();
 void validate_condition_type();
 char *invert_comparator(char *);
 void create_block_condition(char *);
+int add_symbol_table(char *, char *, char *);
+struct_ts *get_ts_element_by_name(char *);
+void add_ts_element(char *, char *, char *);
 
 %}
 %union {
@@ -132,7 +132,14 @@ declarations:
 declaration:
       DIM OPEN_CLASP declaration_list CLOSE_CLASP
           {
-            add_var_symbol_table();
+            int x = 0;
+            for(x; x < var_count; x++) {
+              int can_add = add_symbol_table(strdup(&var_name[var_count-x-1][0]), strdup(&var_type[x][0]), NULL);
+              if(can_add == 0) {
+                printf("\n\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
+                exit(1);
+              }
+            }
             var_count=0;
           }
 
@@ -426,7 +433,7 @@ all_equal:
           insert_polish("0");
           insert_polish("@AllEqualsResults");
           insert_polish(":=");
-          add_symbol_table_aux("@AllEqualsResults", "integer");
+          add_symbol_table("@AllEqualsResults", "integer", NULL);
         }
       OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
@@ -497,7 +504,7 @@ iguales:
             insert_polish("0");
             insert_polish(strdup(&counter_name[0]));
             insert_polish(":=");  
-            add_symbol_table_aux(&counter_name[0], "integer");
+            add_symbol_table(&counter_name[0], "integer", NULL);
           }
       OPEN_PARENTHESIS expression
           {
@@ -506,7 +513,7 @@ iguales:
             strcat(pivote_name, aux);
             insert_polish(strdup(&pivote_name[0]));
             insert_polish(":=");
-            add_symbol_table_aux(&pivote_name[0], "integer");
+            add_symbol_table(&pivote_name[0], "integer", NULL);
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
@@ -590,119 +597,6 @@ int yyerror(void) {
 }
 
  /*
-  * Agrega a la tabla de simbolos constantes enteras reales y strings
-  */
-void add_symbol_table(char* token) {
-  char string_token[512] = "\0";
-  
-  //Si no es un string, le coloco guion bajo delante
-  if(strcmp("STRING_CTE", token) == 0) {
-      yytext[strlen(yytext)-1] = '\0';
-      yytext++;
-  }
-  strcpy(string_token, "_");
-
-  //yytext tiene el lexema de la constante, lo concateno al guion bajo
-  strcat(string_token, yytext);
-
-  //Recorro el archivo para ver si ya fue ingresada la constante para no generar duplicados
-  struct_ts *p = ts;
-  while(p) {
-    if(strcmp(p->name, string_token) == 0) {
-      return;
-    }
-    p = p->next;
-  }
-
-  struct_ts *aux = malloc(sizeof(struct_ts));
-  aux->name = strdup(&string_token[0]);
-  aux->type = strdup(token);
-  aux->value = strdup(yytext); 
-  if(strcmp("STRING_CTE", token) == 0) {
-    int x = 0;
-    aux->length = strlen(yytext);
-    for(x; x < aux->length; x++) {
-      if(aux->name[x] == ' '){
-        aux->name[x] = '_';
-      }
-    }
-  } else {
-    aux->length = 0;
-  }
-  aux->next = NULL;
-
-  if(ts) {
-    last_ts->next = aux;
-  } else {
-    ts = aux;
-  }
-
-  last_ts = aux;
-}
-
- /*
-  * Agrega variables auxiliares
-  */
-void add_symbol_table_aux(char *name, char *type) {
-  //Recorro el archivo para ver si ya fue ingresada la constante para no generar duplicados
-  struct_ts *p = ts;
-  while(p) {
-    if(strcmp(p->name, name) == 0 && strcmp(p->type, type) == 0) {
-      return;
-    }
-    p = p->next;
-  }
-
-  struct_ts *aux = malloc(sizeof(struct_ts));
-  aux->name = strdup(name);
-  aux->type = strdup(type);
-  aux->value = NULL; 
-  aux->length = 0;
-  aux->next = NULL;
-
-  if(ts) {
-    last_ts->next = aux;
-  } else {
-    ts = aux;
-  }
-
-  last_ts = aux;
-}
-
- /*
-  * Agrega a la tabla de simbolos las variables con sus tipos
-  */
-void add_var_symbol_table() {
-  int x = 0;
-
-  for(x; x < var_count; x++) {
-    //Si ya existe en la tabla de simbolos, lanzo un error
-    struct_ts *p = ts;
-    while(p != NULL) {
-      if(strcmp(p->name, var_name[var_count-x-1]) == 0) {
-        printf("\n\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
-        exit(1);
-      }
-      p = p->next;
-    }
-
-    //Genero el registro en la tabla de simbolos
-    struct_ts *aux = malloc(sizeof(struct_ts));
-    aux->name = strdup(var_name[var_count-x-1]);
-    aux->type = strdup(var_type[x]);
-    aux->value = NULL;
-    aux->length = 0; 
-    aux->next = NULL;
-    if(ts != NULL) {
-      last_ts->next = aux;
-    } else {
-      ts = aux;
-    }
-    last_ts = aux;
-  }
-}
-
- /*
   * Valida que el tipo de asignacion sea correcto
   */
 void validate_var_type(char * var_name, char * type) {
@@ -711,6 +605,7 @@ void validate_var_type(char * var_name, char * type) {
   //Busco la variable en la tabla de simbolos
   struct_ts *p = ts;
   while(p) {
+    printf("%s\n", p->name);
     if(strcmp(p->name, var_name) == 0) {
       if(valid_type(type, p->type) == 0) {
         is_valid_type = 0; // Tipo valido
@@ -886,7 +781,7 @@ void create_all_equals_pivote() {
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
   insert_polish(":=");
-  add_symbol_table_aux(strdup(&aux[0]), "integer");
+  add_symbol_table(&aux[0], "integer", NULL);
   all_equals_pivote_index++;
 }
 
@@ -904,7 +799,7 @@ void create_all_equals_condition() {
   push_stack(last_element_polish);
   all_equals_stack++;
   insert_polish("BNE");
-  add_symbol_table_aux(strdup(&aux[0]), "integer");
+  add_symbol_table(&aux[0], "integer", NULL);
   all_equals_to_compare_index++;  
 }
 
@@ -1000,5 +895,75 @@ void create_block_condition(char *comparator) {
     insert_polish(strdup(invert_comparator(comparator)));
   } else {
     insert_polish(strdup(comparator));
+  }
+}
+
+struct_ts *get_ts_element_by_name(char *name) {
+  struct_ts *p = ts;
+  while(p) {
+    if(strcmp(p->name, name) == 0) {
+      return p;
+    }
+    p = p->next;
+  } 
+  return NULL;
+}
+
+void add_ts_element(char * name, char *type, char *value) {
+  struct_ts *aux = malloc(sizeof(struct_ts));
+
+  printf("%s -------------- %s\n", name, value);
+  aux->name = strdup(name);
+  aux->type = strdup(type);
+  if(value != NULL) {
+    aux->value = strdup(value); 
+  } else {
+    aux->value = NULL;
+  }
+  if(strcmp("STRING_CTE", type) == 0) {
+    int x = 0;
+    aux->length = strlen(value);
+    for(x; x < aux->length; x++) {
+      if(aux->name[x] == ' '){
+        aux->name[x] = '_';
+      }
+    }
+  } else {
+    aux->length = 0;
+  }
+  aux->next = NULL;
+
+  if(ts) {
+    last_ts->next = aux;
+  } else {
+    ts = aux;
+  }
+
+  last_ts = aux; 
+}
+
+int add_symbol_table(char *name, char* type, char *value) {
+  char string_name[512] = "\0";
+  
+  //Si es un string, le saco las comillas
+  if(strcmp("STRING_CTE", type) == 0) {
+      name[strlen(name)-1] = '\0';
+      name++;
+      value++;
+  }
+
+  //Si no es un ID le coloco guion bajo
+  if(strcmp("INT_CTE", type) == 0 || strcmp("REAL_CTE", type) == 0 || strcmp("STRING_CTE", type) == 0) {
+    strcat(string_name, "_");
+    strcat(string_name, name);
+  } else {
+    strcpy(string_name, name);
+  }
+
+  if(get_ts_element_by_name(string_name) == NULL) {
+    add_ts_element(&string_name[0], type, value);
+    return 1;
+  } else {
+    return 0;
   }
 }

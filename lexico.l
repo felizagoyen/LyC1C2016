@@ -74,9 +74,9 @@ COMMENT             -\/.*\/-
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
-{INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
-{REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+{INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "INT_CTE", yytext); LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "REAL_CTE", yytext); LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "STRING_CTE", yytext); LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { id_name_validation(yytext); yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 "\n"                { yylineno; }
 %%

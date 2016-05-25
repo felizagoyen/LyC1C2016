@@ -74,6 +74,4 @@ IF(NOT h == b)
 ENDIF
 
 -/ Temas Especiales /-
-h := AllEqual([1,4,3],[2,1,2],[1,3,4])
-h := AllEqual([1+2+3/5,1*b],[b+c,b-2/c],[b*c/19,2/c])
 h := #Iguales(c+b, [2,3,5])
