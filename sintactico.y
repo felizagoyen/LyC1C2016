@@ -82,7 +82,8 @@ struct_polish *pop_stack();
 void create_assembler_header();
 void create_ts_file();  
 void validate_condition_type();
-char * invert_comparator(char *);
+char *invert_comparator(char *);
+void create_block_condition(char *);
 
 %}
 %union {
@@ -295,87 +296,37 @@ comparation:
       expression GREATER_EQUALS_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BGE");
-          } else {
-            insert_polish("BLT");
-          }
+          create_block_condition("BLT");
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BGE");
-          } else {
-            insert_polish("BLE");
-          }
+          create_block_condition("BLE");
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BLE");
-          } else {
-            insert_polish("BGT");
-          }
+          create_block_condition("BGT");
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BLT");
-          } else {
-            insert_polish("BGE");
-          }
+          create_block_condition("BGE");
         }
     | expression EQUALS_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BEQ");
-          } else {
-            insert_polish("BNE");
-          }
+          create_block_condition("BNE");
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
           validate_condition_type();
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BNE");
-          } else {
-            insert_polish("BEQ");
-          }
+          create_block_condition("BEQ");
         }
     | all_equal
         {
-          LOG_MSG("\nSentencia ALLEQUALS");
           insert_polish("1");
-          insert_polish("CMP");
-          insert_polish("");
-          push_stack(last_element_polish);
-          if(if_not == 1) {
-            insert_polish("BEQ");
-          } else {
-            insert_polish("BNE");
-          }
+          create_block_condition("BNE");
           all_equals_pivote_index = 1;
         }
 
@@ -1033,11 +984,22 @@ void validate_condition_type() {
   types_validations_count = -1;
 }
 
-char * invert_comparator(char * comparator) {
+char * invert_comparator(char *comparator) {
   if(strcmp(comparator, "BEQ") == 0) return "BNE";
   if(strcmp(comparator, "BNE") == 0) return "BEQ";
   if(strcmp(comparator, "BGT") == 0) return "BLE";
   if(strcmp(comparator, "BGE") == 0) return "BLT";
   if(strcmp(comparator, "BLT") == 0) return "BGE";
   if(strcmp(comparator, "BLE") == 0) return "BGT"; 
+}
+
+void create_block_condition(char *comparator) {
+  insert_polish("CMP");
+  insert_polish("");
+  push_stack(last_element_polish);
+  if(if_not == 1) {
+    insert_polish(strdup(invert_comparator(comparator)));
+  } else {
+    insert_polish(strdup(comparator));
+  }
 }

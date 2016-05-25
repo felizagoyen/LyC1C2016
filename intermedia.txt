@@ -23,7 +23,7 @@ BI
 1
 CMP
 31
-BNE
+BEQ
 "Conicion multiple con or"
 WRITE
 1
