@@ -46,5 +46,12 @@ _0 dd 0.000000
 _Conicion_multiple_con_and db "Conicion multiple con and",'$',6 dup(?)
 _Conicion_multiple_con_or db "Conicion multiple con or",'$',7 dup(?)
 _Conicion_negada db "Conicion negada",'$',16 dup(?)
+@AllEqualsResults dd ?
+@allEqualsPivot1 dd ?
+@allEqualsPivot2 dd ?
+_4 dd 4.000000
+@allEqualsPivot3 dd ?
+_Conicion_negada db "Conicion negada",'$',16 dup(?)
 @equalsCount1 dd ?
 @equalsPivot1 dd ?
+_44 dd 44.000000

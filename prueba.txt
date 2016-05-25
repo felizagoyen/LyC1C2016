@@ -74,4 +74,12 @@ IF(NOT h == b)
 ENDIF
 
 -/ Temas Especiales /-
+IF(NOT AllEqual([1,2,4],[3,5,6],[1/5,55,2+3*4])) 
+	WRITE "Conicion negada"
+ENDIF
+
+WHILE(#Iguales(3,[b,h,f]) < 3 && AllEqual([#Iguales(b,[h,f*44,c*f/h]),b*f,4],[3,5,6],[1/5,55,2+3*4]))
+	h := #Iguales(b,[c,h]) * f / (#Iguales(15,[c,f]) + 1)
+ENDWHILE
+
 h := #Iguales(c+b, [2,3,5])
