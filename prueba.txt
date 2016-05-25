@@ -7,7 +7,8 @@ DIM [string_var, int_var, real_var] AS [string, integer, real]
 
 -/ Prueba Asignaciones /-
 string_var := "Grupo06"
-int_var := 32764
+string_var := "123456789012345678901234567890"
+int_var := 32767
 real_var := 12349.123111
 real_var := 1.
 real_var := .1
@@ -74,7 +75,7 @@ IF(NOT h == b)
 ENDIF
 
 -/ Temas Especiales /-
-IF(NOT AllEqual([1,2,4],[3,5,6],[1/5,55,2+3*4])) 
+IF(NOT AllEqual([1,2,4],[1,2,3],[1/5,55,2+3*4])) 
 	WRITE "Condicion negada"
 ENDIF
 
@@ -82,4 +83,4 @@ WHILE(#Iguales(3,[b,h,f]) < 3 && AllEqual([#Iguales(b,[h,f*44,c*f/h]),b*f,4],[3,
 	h := #Iguales(b,[c,h]) * f / (#Iguales(15,[c,f]) + 1)
 ENDWHILE
 
-h := #Iguales(c+b, [2,3,5])
+h := #Iguales(c+b, [#Iguales(1,[1]),3,5])

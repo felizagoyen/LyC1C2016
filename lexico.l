@@ -86,7 +86,7 @@ COMMENT             -\/.*\/-
  */
 void id_name_validation(char * id) {
   if(strlen(id) > 30) {
-    printf("Los ids solo pueden tener 30 caracteres en el nombre\n");
+    printf("\n\nLinea %d. Los ids solo pueden tener contener 30 caracteres en el nombre\n", yylineno);
     exit(1);
   }
 }
@@ -98,7 +98,7 @@ char *string_validation(char * string) {
   string[strlen(string)-1] = '\0';
   string++;
   if(strlen(string) > STRING_MAX_LENGTH) {
-    printf("Rango excedido de los strings\n");
+    printf("\n\nLinea %d. Rango excedido de los strings. Solo se admiten 30 caracteres\n", yylineno);
     exit(1);
   }
   return string;
@@ -124,7 +124,7 @@ void int_range_validation(char * number) {
       return;
     }
   }
-  printf("Rango excedido de los enteros\n");
+  printf("\n\nLinea %d. Rango excedido de los enteros\n", yylineno);
   exit(-1);
 }
 
@@ -146,7 +146,7 @@ void real_range_validation(char * number) {
     }
   }
   if(integer_part>(3.402823466*pow(10,38))) { //verifica que la parte entera se encuentre dentro del rango correspondiente
-    printf("Rango excedido de los reales\n");
+    printf("\n\nLinea %d. Rango excedido de los reales\n", yylineno);
     exit(1);
   }
   count+=2;
@@ -155,7 +155,7 @@ void real_range_validation(char * number) {
     count++;
   }
   if(number_of_decimals>6) {  //verifica que no se exceda de la cantidad de decimales permitidos
-    printf("Rango excedido de los reales\n");
+    printf("\n\nLinea %d. Rango excedido de los reales\n", yylineno);
     exit(1);
   }
 } 

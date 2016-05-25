@@ -1,51 +1,54 @@
-             Nombre              |       Tipo      |                Valor              |  Longitud
--------------------------------------------------------------------------------------------------------
-a                                |  string         |                                   |  0
-e                                |  string         |                                   |  0
-b                                |  integer        |                                   |  0
-c                                |  real           |                                   |  0
-f                                |  real           |                                   |  0
-h                                |  integer        |                                   |  0
-string_var                       |  string         |                                   |  0
-int_var                          |  integer        |                                   |  0
-real_var                         |  real           |                                   |  0
-_Grupo06                         |  STRING_CTE     |  Grupo06                          |  7
-_32764                           |  INT_CTE        |  32764                            |  0
-_12349.123111                    |  REAL_CTE       |  12349.123111                     |  0
-_1.                              |  REAL_CTE       |  1.                               |  0
-_.1                              |  REAL_CTE       |  .1                               |  0
-_6                               |  INT_CTE        |  6                                |  0
-_56                              |  INT_CTE        |  56                               |  0
-_59                              |  INT_CTE        |  59                               |  0
-_1                               |  INT_CTE        |  1                                |  0
-_3                               |  INT_CTE        |  3                                |  0
-_5                               |  INT_CTE        |  5                                |  0
-_7                               |  INT_CTE        |  7                                |  0
-_19                              |  INT_CTE        |  19                               |  0
-_13                              |  INT_CTE        |  13                               |  0
-_2                               |  INT_CTE        |  2                                |  0
-_123                             |  INT_CTE        |  123                              |  0
-_1.5                             |  REAL_CTE       |  1.5                              |  0
-_2.5                             |  REAL_CTE       |  2.5                              |  0
-_1.0                             |  REAL_CTE       |  1.0                              |  0
-_15                              |  INT_CTE        |  15                               |  0
-_10.1                            |  REAL_CTE       |  10.1                             |  0
-_string                          |  STRING_CTE     |  string                           |  6
-_HOLA                            |  STRING_CTE     |  HOLA                             |  4
-_55                              |  INT_CTE        |  55                               |  0
-_1242                            |  INT_CTE        |  1242                             |  0
-_69                              |  INT_CTE        |  69                               |  0
-_53                              |  INT_CTE        |  53                               |  0
-_0                               |  INT_CTE        |  0                                |  0
-_Condicion_multiple_con_and      |  STRING_CTE     |  Condicion multiple con and       |  26
-_Condicion_multiple_con_or       |  STRING_CTE     |  Condicion multiple con or        |  25
-_Condicion_negada                |  STRING_CTE     |  Condicion negada                 |  16
-@AllEqualsResults                |  integer        |                                   |  0
-@allEqualsPivot1                 |  integer        |                                   |  0
-@allEqualsPivot2                 |  integer        |                                   |  0
-_4                               |  INT_CTE        |  4                                |  0
-@allEqualsPivot3                 |  integer        |                                   |  0
-_Condicion_negada                |  STRING_CTE     |  Condicion negada                 |  16
-@equalsCount1                    |  integer        |                                   |  0
-@equalsPivot1                    |  integer        |                                   |  0
-_44                              |  INT_CTE        |  44                               |  0
+             Nombre                        |       Tipo      |                Valor              |  Longitud
+----------------------------------------------------------------------------------------------------------------
+a                                          |  string         |                                   |  0
+e                                          |  string         |                                   |  0
+b                                          |  integer        |                                   |  0
+c                                          |  real           |                                   |  0
+f                                          |  real           |                                   |  0
+h                                          |  integer        |                                   |  0
+string_var                                 |  string         |                                   |  0
+int_var                                    |  integer        |                                   |  0
+real_var                                   |  real           |                                   |  0
+_str_Grupo06                               |  STRING_CTE     |  Grupo06                          |  7
+_str_123456789012345678901234567890        |  STRING_CTE     |  123456789012345678901234567890   |  30
+_int_32767                                 |  INT_CTE        |  32767                            |  0
+_real_12349.123111                         |  REAL_CTE       |  12349.123111                     |  0
+_real_1.                                   |  REAL_CTE       |  1.                               |  0
+_real_.1                                   |  REAL_CTE       |  .1                               |  0
+_int_6                                     |  INT_CTE        |  6                                |  0
+_int_56                                    |  INT_CTE        |  56                               |  0
+_int_59                                    |  INT_CTE        |  59                               |  0
+_int_1                                     |  INT_CTE        |  1                                |  0
+_int_3                                     |  INT_CTE        |  3                                |  0
+_int_5                                     |  INT_CTE        |  5                                |  0
+_int_7                                     |  INT_CTE        |  7                                |  0
+_int_19                                    |  INT_CTE        |  19                               |  0
+_int_13                                    |  INT_CTE        |  13                               |  0
+_int_2                                     |  INT_CTE        |  2                                |  0
+_int_123                                   |  INT_CTE        |  123                              |  0
+_real_1.5                                  |  REAL_CTE       |  1.5                              |  0
+_real_2.5                                  |  REAL_CTE       |  2.5                              |  0
+_real_1.0                                  |  REAL_CTE       |  1.0                              |  0
+_int_15                                    |  INT_CTE        |  15                               |  0
+_real_10.1                                 |  REAL_CTE       |  10.1                             |  0
+_str_string                                |  STRING_CTE     |  string                           |  6
+_str_HOLA                                  |  STRING_CTE     |  HOLA                             |  4
+_int_55                                    |  INT_CTE        |  55                               |  0
+_int_1242                                  |  INT_CTE        |  1242                             |  0
+_int_69                                    |  INT_CTE        |  69                               |  0
+_int_53                                    |  INT_CTE        |  53                               |  0
+_int_0                                     |  INT_CTE        |  0                                |  0
+_str_Condicion_multiple_con_and            |  STRING_CTE     |  Condicion multiple con and       |  26
+_str_Condicion_multiple_con_or             |  STRING_CTE     |  Condicion multiple con or        |  25
+_str_Condicion_negada                      |  STRING_CTE     |  Condicion negada                 |  16
+_allEqualsResults                          |  integer        |                                   |  0
+_allEqualsPivote1                          |  integer        |                                   |  0
+_allEqualsPivote2                          |  integer        |                                   |  0
+_int_4                                     |  INT_CTE        |  4                                |  0
+_allEqualsPivote3                          |  integer        |                                   |  0
+_str_Condicion_negada                      |  STRING_CTE     |  Condicion negada                 |  16
+_equalsCount1                              |  integer        |                                   |  0
+_equalsPivote1                             |  integer        |                                   |  0
+_int_44                                    |  INT_CTE        |  44                               |  0
+_equalsCount2                              |  integer        |                                   |  0
+_equalsPivote2                             |  integer        |                                   |  0

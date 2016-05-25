@@ -138,7 +138,7 @@ declaration:
             for(x; x < var_count; x++) {
               int can_add = add_symbol_table(strdup(&var_name[var_count-x-1][0]), strdup(&var_type[x][0]), NULL);
               if(can_add == 0) {
-                printf("\n\nLa variable %s ya se encuentra declarada\n", var_name[var_count-x-1]);
+                printf("\n\nLinea %d. La variable %s ya se encuentra declarada\n", yylineno, var_name[var_count-x-1]);
                 exit(1);
               }
             }
@@ -185,14 +185,14 @@ sentence:
 assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
         {
-          LOG_MSG("Regla 10. assignment -> ID ASSIGNMENT_OPERATOR string_concatenation\n");
+          LOG_MSG("\nRegla 10. assignment -> ID ASSIGNMENT_OPERATOR string_concatenation");
           validate_var_type($1, "STRING");
           insert_polish($1);
           insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR expression
         {
-          LOG_MSG("Regla 10. assignment -> ID ASSIGNMENT_OPERATOR expression");
+          LOG_MSG("\nRegla 10. assignment -> ID ASSIGNMENT_OPERATOR expression");
           validate_assignament_type($1);
           insert_polish($1);
           insert_polish($2);
@@ -237,13 +237,15 @@ factor:
         {
           types_validations_count++;
           strcpy(types_validations[types_validations_count], "NUMBER");
-          insert_polish($1);
+          struct_ts *p = get_ts_element_by_value($1);
+          insert_polish(p->name);
         }
     | REAL_CTE
         {
           types_validations_count++;
           strcpy(types_validations[types_validations_count], "NUMBER");
-          insert_polish($1);
+          struct_ts *p = get_ts_element_by_value($1);
+          insert_polish(p->name);
         }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
     | iguales
@@ -251,7 +253,7 @@ factor:
 string_concatenation:
       STRING_CTE
         {
-          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE\n");
+          LOG_MSG("\nRegla 14. string_concatenation -> STRING_CTE");
           types_validations_count++;
           strcpy(types_validations[types_validations_count], "STRING");
           struct_ts *p = get_ts_element_by_value($1);
@@ -259,30 +261,34 @@ string_concatenation:
         }
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
         {
-          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR STRING_CTE\n");
-          insert_polish(strdup(replace_space_whit_underscore($1)));
-          insert_polish(strdup(replace_space_whit_underscore($3)));
+          LOG_MSG("\nRegla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR STRING_CTE");
+          struct_ts *p = get_ts_element_by_value($1);
+          insert_polish(strdup(p->name));
+          p = get_ts_element_by_value($3);
+          insert_polish(strdup(p->name));
           insert_polish($2);
         }
     | STRING_CTE CONCATENATION_OPERATOR ID
         {
-          LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR ID\n");
+          LOG_MSG("\nRegla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR ID");
           validate_var_type($3, "STRING");
-          insert_polish(strdup(replace_space_whit_underscore($1)));
+          struct_ts *p = get_ts_element_by_value($1);
+          insert_polish(strdup(p->name));
           insert_polish($3);
           insert_polish($2);
         }
     | ID CONCATENATION_OPERATOR STRING_CTE
         {
-          LOG_MSG("Regla 14. string_concatenation -> ID CONCATENATION_OPERATOR STRING_CTE\n");
+          LOG_MSG("\nRegla 14. string_concatenation -> ID CONCATENATION_OPERATOR STRING_CTE");
           validate_var_type($1, "STRING");
           insert_polish($1);
-          insert_polish(strdup(replace_space_whit_underscore($3)));
+          struct_ts *p = get_ts_element_by_value($3);
+          insert_polish(strdup(p->name));
           insert_polish($2);
         }
     | ID CONCATENATION_OPERATOR ID
         {
-          LOG_MSG("Regla 14. string_concatenation -> ID CONCATENATION_OPERATOR ID\n");
+          LOG_MSG("\nRegla 14. string_concatenation -> ID CONCATENATION_OPERATOR ID");
           validate_var_type($1, "STRING");
           validate_var_type($3, "STRING");
           insert_polish($1);
@@ -293,7 +299,7 @@ string_concatenation:
 if:
       IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF 
         {
-          LOG_MSG("Regla 15. if -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF\n");
+          LOG_MSG("\nRegla 15. if -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF");
           char aux[10];
           int x = 0;
           for(x; x < comparation_number; x++) {
@@ -310,7 +316,7 @@ if_else:
           int x = 0;
           for(x; x < comparation_number; x++) {
             struct_polish *p = pop_stack();
-            sprintf(aux, "%d", polish_index);
+            sprintf(aux, "%d", polish_index + 2);
             p->element = strdup(&aux[0]);
           }
           insert_polish("");
@@ -319,7 +325,7 @@ if_else:
         } 
       ELSE sentences ENDIF
         {
-          LOG_MSG("Regla 16. if_elsee -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF\n");          
+          LOG_MSG("\nRegla 16. if_elsee -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ELSE sentences ENDIF");          
           char aux[10];
           struct_polish *p = pop_stack();
           sprintf(aux, "%d", polish_index);
@@ -342,7 +348,7 @@ while:
         }
       CLOSE_PARENTHESIS sentences ENDWHILE 
         {
-          LOG_MSG("Regla 17. while -> WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE\n");
+          LOG_MSG("\nRegla 17. while -> WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE");
           char aux[10];
           int x = 0;
           for(x; x < comparation_number; x++) {
@@ -388,43 +394,43 @@ condition:
 comparation:
       expression GREATER_EQUALS_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression GREATER_EQUALS_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression GREATER_EQUALS_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BLT");
         }
     | expression GREATER_THAN_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression GREATER_THAN_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression GREATER_THAN_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BLE");
         }
     | expression SMALLER_EQUALS_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression SMALLER_EQUALS_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression SMALLER_EQUALS_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BGT");
         }
     | expression SMALLER_THAN_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression SMALLER_THAN_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression SMALLER_THAN_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BGE");
         }
     | expression EQUALS_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression EQUALS_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression EQUALS_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BNE");
         }
     | expression NOT_EQUALS_OPERATOR expression
         { 
-          LOG_MSG("Regla 19. comparation -> expression NOT_EQUALS_OPERATOR expression\n");
+          LOG_MSG("\nRegla 19. comparation -> expression NOT_EQUALS_OPERATOR expression");
           validate_condition_type();
           create_block_condition("BEQ");
         }
     | all_equal
         {
-          LOG_MSG("Regla 19. comparation -> all_equal\n");
+          LOG_MSG("\nRegla 19. comparation -> all_equal");
           insert_polish("1");
           create_block_condition("BNE");
           all_equals_pivote_index = 1;
@@ -434,27 +440,24 @@ all_equal:
       ALL_EQUAL
         {
           insert_polish("0");
-          insert_polish("@AllEqualsResults");
+          insert_polish("_allEqualsResults");
           insert_polish(":=");
-          add_symbol_table("@AllEqualsResults", "integer", NULL);
+          add_symbol_table("_allEqualsResults", "integer", NULL);
         }
       OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
-          LOG_MSG("Regla 20. all_equal -> ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS\n");
+          LOG_MSG("\nRegla 20. all_equal -> ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS");
           char aux[10];
           int i = 0;
           for(i; i < all_equals_stack; i++) {
             struct_polish *p = pop_stack();
-            sprintf(aux, "%d", (polish_index + 5));
+            sprintf(aux, "%d", (polish_index + 3));
             p->element = strdup(&aux[0]);
           }
           insert_polish("1");
-          insert_polish("@AllEqualsResults");
+          insert_polish("_allEqualsResults");
           insert_polish(":=");
-          sprintf(aux, "%d", (polish_index + 2));
-          insert_polish(strdup(&aux[0]));
-          insert_polish("BI");
-          insert_polish("@AllEqualsResults");
+          insert_polish("_allEqualsResults");
           all_equals_stack = 0;
         }
 
@@ -463,7 +466,7 @@ expressions_list_all_equals_to_compare:
       expression_list_all_equals_to_compare
         {
           if(all_equals_to_compare_index < all_equals_pivote_index) {
-            LOG_MSG("\n\nLa lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            printf("\n\nLinea %d. La lista tiene menor cantidad de elementos que el pivote en all equals\n", yylineno);
             exit(1);
           }
           all_equals_to_compare_index = 1;
@@ -471,7 +474,7 @@ expressions_list_all_equals_to_compare:
     | expression_list_all_equals_to_compare
         {
           if(all_equals_to_compare_index < all_equals_pivote_index) {
-            LOG_MSG("\n\nLa lista tiene menor cantidad de elementos que el pivote en all equals\n");
+            printf("\n\nLinea %d. La lista tiene menor cantidad de elementos que el pivote en all equals\n", yylineno);
             exit(1);
           }
           all_equals_to_compare_index = 1;
@@ -500,7 +503,7 @@ expression_list_all_equals_pivote:
 iguales:
       IGUALES
           {
-            char aux[10], counter_name[15] = "@equalsCount";
+            char aux[10], counter_name[15] = "_equalsCount";
             iguales_index++;
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
@@ -511,7 +514,7 @@ iguales:
           }
       OPEN_PARENTHESIS expression
           {
-            char aux[10], pivote_name[15] = "@equalsPivot";
+            char aux[10], pivote_name[15] = "_equalsPivote";
             sprintf(aux, "%d", iguales_index);
             strcat(pivote_name, aux);
             insert_polish(strdup(&pivote_name[0]));
@@ -520,8 +523,8 @@ iguales:
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
-            LOG_MSG("Regla 24. iguales -> IGUALES OPEN_PARENTHESIS expression COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS\n");
-            char aux[10], counter_name[15] = "@equalsCount";
+            LOG_MSG("\nRegla 24. iguales -> IGUALES OPEN_PARENTHESIS expression COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS");
+            char aux[10], counter_name[15] = "_equalsCount";
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
             insert_polish(strdup(&counter_name[0]));
@@ -542,7 +545,7 @@ expression_list_equals:
 read:
       READ ID
         {
-          LOG_MSG("Regla 26. read -> READ ID\n");
+          LOG_MSG("\nRegla 26. read -> READ ID");
           insert_polish($2);
           insert_polish("READ");
           types_validations_count = -1;
@@ -551,13 +554,13 @@ read:
 write:
       WRITE string_concatenation
         {
-          LOG_MSG("Regla 27. write -> WRITE string_concatenation\n");
+          LOG_MSG("\nRegla 27. write -> WRITE string_concatenation");
           insert_polish("WRITE");
           types_validations_count = -1;
         }
     | WRITE ID
         {
-          LOG_MSG("Regla 27. write -> WRITE ID\n");
+          LOG_MSG("\nRegla 27. write -> WRITE ID");
           insert_polish($2);
           insert_polish("WRITE");
           validate_var_type($2, "STRING");
@@ -651,15 +654,15 @@ void create_ts_file() {
     exit(1);
   }  
 
-  fprintf(ts_file, "             %-20s|       %-10s|                ", "Nombre", "Tipo");
+  fprintf(ts_file, "             %-30s|       %-10s|                ", "Nombre", "Tipo");
   fprintf(ts_file, "%-19s|  %s\n", "Valor", "Longitud");
-  fprintf(ts_file, "----------------------------------------------------");
-  fprintf(ts_file, "---------------------------------------------------\n");
+  fprintf(ts_file, "--------------------------------------------------------");
+  fprintf(ts_file, "--------------------------------------------------------\n");
   while(ts) {
     if(ts->value) {
-      fprintf(ts_file, "%-33s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, ts->value, ts->length);
+      fprintf(ts_file, "%-43s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, ts->value, ts->length);
     } else {
-      fprintf(ts_file, "%-33s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, "", ts->length);
+      fprintf(ts_file, "%-43s|  %-15s|  %-33s|  %d\n", ts->name, ts->type, "", ts->length);
     }
     struct_ts *p = ts;
     ts = ts->next;
@@ -669,29 +672,28 @@ void create_ts_file() {
   fclose(ts_file);
 }
 
-void validate_assignament_type(char *var_name) {
+void validate_assignament_type(char *name) {
   char type[10];
   char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
   int x = 0;
 
   //Busco la variable en la tabla de simbolos
-  struct_ts *p = ts;
-  while(p) {
-    if(strcmp(p->name, var_name) == 0) {
-      if(strcmp(p->type, "string") == 0) {
-        strcpy(type, "STRING");
-      } else {
-        strcpy(type, "NUMBER");
-      }
-      for(x; x <= types_validations_count; x++) {
-        if(strcmp(type, types_validations[x]) != 0) {
-          printf("\n\nLinea %d. No coinciden los tipos de datos\n", yylineno);
-          exit(1);
-        }
-      }
-      break;
+  struct_ts *p = get_ts_element_by_name(name);
+  if(p != NULL) {
+    if(strcmp(p->type, "string") == 0) {
+      strcpy(type, "STRING");
+    } else {
+      strcpy(type, "NUMBER");
     }
-    p = p->next;
+    for(x; x <= types_validations_count; x++) {
+      if(strcmp(type, types_validations[x]) != 0) {
+        printf("\n\nLinea %d. No coinciden los tipos de datos\n", yylineno);
+        exit(1);
+      }
+    }
+  } else {
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, name);
+    exit(1);
   }
 
   types_validations_count = -1;
@@ -715,6 +717,7 @@ void insert_polish(char * element) {
 void create_intermediate_file() {
   FILE *code_file;
   struct_polish *p, *next;
+  int pos = 1;
   //Abre el archivo de codigo intermedio
   if((code_file = fopen(CODE_FILE, "wt")) == NULL) {
     printf("\n\nError al abrir el archivo de codigo intermedio %s\n", CODE_FILE);
@@ -722,8 +725,11 @@ void create_intermediate_file() {
   }
 
   next = polish;
+  fprintf(code_file, "Posicion  |   Elemento\n");
+  fprintf(code_file, "--------------------------\n");
   while(next) {
-    fprintf(code_file, "%s\n", next->element);
+    fprintf(code_file, "%-10d|  %s\n", pos, next->element);
+    pos++;
     p = next;
     next = next->next;
     free(p);
@@ -737,7 +743,7 @@ void create_intermediate_file() {
 }
 
 void create_equals_condition() {
-  char aux[10], pivote_name[15] = "@equalsPivote", counter_name[15] = "@equalsCount";
+  char aux[10], pivote_name[15] = "_equalsPivote", counter_name[15] = "_equalsCount";
   sprintf(aux, "%d", iguales_index);
   strcat(pivote_name, aux);  
   strcat(counter_name, aux);  
@@ -754,7 +760,7 @@ void create_equals_condition() {
 }
 
 void create_all_equals_pivote() {
-  char str[10], aux[20] = "@allEqualsPivot";
+  char str[10], aux[20] = "_allEqualsPivote";
   sprintf(str, "%d", all_equals_pivote_index);
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
@@ -765,10 +771,10 @@ void create_all_equals_pivote() {
 
 void create_all_equals_condition() {
   if(all_equals_to_compare_index >= all_equals_pivote_index) {
-    LOG_MSG("\n\nLa lista tiene mayor cantidad de elementos que el pivote en all equals\n");
+    printf("\n\nLinea %d. La lista tiene mayor cantidad de elementos que el pivote en all equals\n", yylineno);
     exit(1);
   }
-  char str[10], aux[20] = "@allEqualsPivot";
+  char str[10], aux[20] = "_allEqualsPivote";
   sprintf(str, "%d", all_equals_to_compare_index);
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
@@ -927,13 +933,16 @@ void add_ts_element(char * name, char *type, char *value) {
 
 int add_symbol_table(char *name, char* type, char *value) {
   char string_name[512] = "\0";
-  //Si no es un ID le coloco guion bajo
-  if(strcmp("INT_CTE", type) == 0 || strcmp("REAL_CTE", type) == 0 || strcmp("STRING_CTE", type) == 0) {
-    strcat(string_name, "_");
-    strcat(string_name, name);
-  } else {
-    strcpy(string_name, name);
-  }
+  
+  //Si no es un ID le coloco guion bajo con identificador
+  if(strcmp("INT_CTE", type) == 0) {
+    strcat(string_name, "_int_");
+  } else if(strcmp("REAL_CTE", type) == 0) {
+    strcat(string_name, "_real_");
+  } else if(strcmp("STRING_CTE", type) == 0) {
+    strcat(string_name, "_str_");
+  } 
+  strcat(string_name, name);
 
   if(get_ts_element_by_name(string_name) == NULL) {
     add_ts_element(&string_name[0], type, value);

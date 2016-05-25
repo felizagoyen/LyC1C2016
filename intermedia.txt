@@ -1,509 +1,526 @@
-_Grupo06
-string_var
-:=
-32764
-int_var
-:=
-12349.123111
-real_var
-:=
-1.
-real_var
-:=
-.1
-real_var
-:=
-6
-56
-*
-59
--
-b
-:=
-b
-1
--
-3
-/
-5
-+
-7
-*
-b
-:=
-19
-13
-*
-c
-:=
-1
-1
-+
-f
-:=
-2
-123
--
-f
-:=
-1
-1
-*
-f
-:=
-2
-1
-/
-f
-:=
-1.5
-1
-1
-*
-+
-f
-:=
-1
-1
-1
-*
--
-f
-:=
-1
-2.5
-1
-/
-+
-f
-:=
-1
-1
-1.0
-/
--
-f
-:=
-int_var
-real_var
-*
-15
-/
-10.1
-+
-1
--
-f
-:=
-a
-e
-++
-a
-:=
-a
-string
-++
-a
-:=
-string
-a
-++
-a
-:=
-string
-string
-++
-a
-:=
-a
-e
-:=
-a
-WRITE
-_HOLA
-WRITE
-b
-READ
-c
-READ
-f
-b
-CMP
-145
-BLE
-55
-h
-:=
-f
-c
-CMP
-145
-BGE
-1242
-h
-:=
-150
-BI
-69
-h
-:=
-f
-c
-CMP
-158
-BEQ
-53
-f
-:=
-f
-0
-CMP
-170
-BLE
-f
-1
--
-f
-:=
-158
-BI
-f
-3
-CMP
-184
-BLE
-b
-3
-CMP
-184
-BGE
-_Condicion_multiple_con_and
-WRITE
-170
-BI
-f
-3
-CMP
-194
-BGE
-b
-3
-CMP
-196
-BGT
-_Condicion_multiple_con_or
-WRITE
-h
-b
-CMP
-203
-BEQ
-_Condicion_negada
-WRITE
-0
-@AllEqualsResults
-:=
-1
-@allEqualsPivot1
-:=
-2
-@allEqualsPivot2
-:=
-4
-@allEqualsPivot3
-:=
-3
-@allEqualsPivot1
-CMP
-256
-BNE
-5
-@allEqualsPivot2
-CMP
-256
-BNE
-6
-@allEqualsPivot3
-CMP
-256
-BNE
-1
-5
-/
-@allEqualsPivot1
-CMP
-256
-BNE
-55
-@allEqualsPivot2
-CMP
-256
-BNE
-2
-3
-4
-*
-+
-@allEqualsPivot3
-CMP
-256
-BNE
-1
-@AllEqualsResults
-:=
-256
-BI
-@AllEqualsResults
-1
-CMP
-263
-BEQ
-_Condicion_negada
-WRITE
-0
-@equalsCount1
-:=
-3
-@equalsPivot1
-:=
-b
-@equalsPivote1
-CMP
-279
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-h
-@equalsPivote1
-CMP
-289
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-f
-@equalsPivote1
-CMP
-299
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-@equalsCount1
-3
-CMP
-469
-BGE
-0
-@AllEqualsResults
-:=
-0
-@equalsCount1
-:=
-b
-@equalsPivot1
-:=
-h
-@equalsPivote1
-CMP
-323
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-f
-44
-*
-@equalsPivote1
-CMP
-335
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-c
-f
-*
-h
-/
-@equalsPivote1
-CMP
-349
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-@equalsCount1
-@allEqualsPivot1
-:=
-b
-f
-*
-@allEqualsPivot2
-:=
-4
-@allEqualsPivot3
-:=
-3
-@allEqualsPivot1
-CMP
-401
-BNE
-5
-@allEqualsPivot2
-CMP
-401
-BNE
-6
-@allEqualsPivot3
-CMP
-401
-BNE
-1
-5
-/
-@allEqualsPivot1
-CMP
-401
-BNE
-55
-@allEqualsPivot2
-CMP
-401
-BNE
-2
-3
-4
-*
-+
-@allEqualsPivot3
-CMP
-401
-BNE
-1
-@AllEqualsResults
-:=
-401
-BI
-@AllEqualsResults
-1
-CMP
-469
-BNE
-0
-@equalsCount1
-:=
-b
-@equalsPivot1
-:=
-c
-@equalsPivote1
-CMP
-422
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-h
-@equalsPivote1
-CMP
-432
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-@equalsCount1
-f
-*
-0
-@equalsCount1
-:=
-15
-@equalsPivot1
-:=
-c
-@equalsPivote1
-CMP
-451
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-f
-@equalsPivote1
-CMP
-461
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-@equalsCount1
-1
-+
-/
-h
-:=
-263
-BI
-0
-@equalsCount1
-:=
-c
-b
-+
-@equalsPivot1
-:=
-2
-@equalsPivote1
-CMP
-487
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-3
-@equalsPivote1
-CMP
-497
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-5
-@equalsPivote1
-CMP
-507
-BNE
-1
-+
-@equalsCount1
-@equalsCount1
-:=
-@equalsCount1
-h
-:=
+Posicion  |   Elemento
+--------------------------
+1         |  _str_Grupo06
+2         |  string_var
+3         |  :=
+4         |  _str_123456789012345678901234567890
+5         |  string_var
+6         |  :=
+7         |  _int_32767
+8         |  int_var
+9         |  :=
+10        |  _real_12349.123111
+11        |  real_var
+12        |  :=
+13        |  _real_1.
+14        |  real_var
+15        |  :=
+16        |  _real_.1
+17        |  real_var
+18        |  :=
+19        |  _int_6
+20        |  _int_56
+21        |  *
+22        |  _int_59
+23        |  -
+24        |  b
+25        |  :=
+26        |  b
+27        |  _int_1
+28        |  -
+29        |  _int_3
+30        |  /
+31        |  _int_5
+32        |  +
+33        |  _int_7
+34        |  *
+35        |  b
+36        |  :=
+37        |  _int_19
+38        |  _int_13
+39        |  *
+40        |  c
+41        |  :=
+42        |  _int_1
+43        |  _int_1
+44        |  +
+45        |  f
+46        |  :=
+47        |  _int_2
+48        |  _int_123
+49        |  -
+50        |  f
+51        |  :=
+52        |  _int_1
+53        |  _int_1
+54        |  *
+55        |  f
+56        |  :=
+57        |  _int_2
+58        |  _int_1
+59        |  /
+60        |  f
+61        |  :=
+62        |  _real_1.5
+63        |  _int_1
+64        |  _int_1
+65        |  *
+66        |  +
+67        |  f
+68        |  :=
+69        |  _int_1
+70        |  _int_1
+71        |  _int_1
+72        |  *
+73        |  -
+74        |  f
+75        |  :=
+76        |  _int_1
+77        |  _real_2.5
+78        |  _int_1
+79        |  /
+80        |  +
+81        |  f
+82        |  :=
+83        |  _int_1
+84        |  _int_1
+85        |  _real_1.0
+86        |  /
+87        |  -
+88        |  f
+89        |  :=
+90        |  int_var
+91        |  real_var
+92        |  *
+93        |  _int_15
+94        |  /
+95        |  _real_10.1
+96        |  +
+97        |  _int_1
+98        |  -
+99        |  f
+100       |  :=
+101       |  a
+102       |  e
+103       |  ++
+104       |  a
+105       |  :=
+106       |  a
+107       |  _str_string
+108       |  ++
+109       |  a
+110       |  :=
+111       |  _str_string
+112       |  a
+113       |  ++
+114       |  a
+115       |  :=
+116       |  _str_string
+117       |  _str_string
+118       |  ++
+119       |  a
+120       |  :=
+121       |  a
+122       |  e
+123       |  :=
+124       |  a
+125       |  WRITE
+126       |  _str_HOLA
+127       |  WRITE
+128       |  b
+129       |  READ
+130       |  c
+131       |  READ
+132       |  f
+133       |  b
+134       |  CMP
+135       |  150
+136       |  BLE
+137       |  _int_55
+138       |  h
+139       |  :=
+140       |  f
+141       |  c
+142       |  CMP
+143       |  148
+144       |  BGE
+145       |  _int_1242
+146       |  h
+147       |  :=
+148       |  153
+149       |  BI
+150       |  _int_69
+151       |  h
+152       |  :=
+153       |  f
+154       |  c
+155       |  CMP
+156       |  161
+157       |  BEQ
+158       |  _int_53
+159       |  f
+160       |  :=
+161       |  f
+162       |  _int_0
+163       |  CMP
+164       |  173
+165       |  BLE
+166       |  f
+167       |  _int_1
+168       |  -
+169       |  f
+170       |  :=
+171       |  161
+172       |  BI
+173       |  f
+174       |  _int_3
+175       |  CMP
+176       |  187
+177       |  BLE
+178       |  b
+179       |  _int_3
+180       |  CMP
+181       |  187
+182       |  BGE
+183       |  _str_Condicion_multiple_con_and
+184       |  WRITE
+185       |  173
+186       |  BI
+187       |  f
+188       |  _int_3
+189       |  CMP
+190       |  197
+191       |  BGE
+192       |  b
+193       |  _int_3
+194       |  CMP
+195       |  199
+196       |  BGT
+197       |  _str_Condicion_multiple_con_or
+198       |  WRITE
+199       |  h
+200       |  b
+201       |  CMP
+202       |  206
+203       |  BEQ
+204       |  _str_Condicion_negada
+205       |  WRITE
+206       |  0
+207       |  _allEqualsResults
+208       |  :=
+209       |  _int_1
+210       |  _allEqualsPivote1
+211       |  :=
+212       |  _int_2
+213       |  _allEqualsPivote2
+214       |  :=
+215       |  _int_4
+216       |  _allEqualsPivote3
+217       |  :=
+218       |  _int_1
+219       |  _allEqualsPivote1
+220       |  CMP
+221       |  257
+222       |  BNE
+223       |  _int_2
+224       |  _allEqualsPivote2
+225       |  CMP
+226       |  257
+227       |  BNE
+228       |  _int_3
+229       |  _allEqualsPivote3
+230       |  CMP
+231       |  257
+232       |  BNE
+233       |  _int_1
+234       |  _int_5
+235       |  /
+236       |  _allEqualsPivote1
+237       |  CMP
+238       |  257
+239       |  BNE
+240       |  _int_55
+241       |  _allEqualsPivote2
+242       |  CMP
+243       |  257
+244       |  BNE
+245       |  _int_2
+246       |  _int_3
+247       |  _int_4
+248       |  *
+249       |  +
+250       |  _allEqualsPivote3
+251       |  CMP
+252       |  257
+253       |  BNE
+254       |  1
+255       |  _allEqualsResults
+256       |  :=
+257       |  _allEqualsResults
+258       |  1
+259       |  CMP
+260       |  264
+261       |  BEQ
+262       |  _str_Condicion_negada
+263       |  WRITE
+264       |  0
+265       |  _equalsCount1
+266       |  :=
+267       |  _int_3
+268       |  _equalsPivote1
+269       |  :=
+270       |  b
+271       |  _equalsPivote1
+272       |  CMP
+273       |  280
+274       |  BNE
+275       |  1
+276       |  +
+277       |  _equalsCount1
+278       |  _equalsCount1
+279       |  :=
+280       |  h
+281       |  _equalsPivote1
+282       |  CMP
+283       |  290
+284       |  BNE
+285       |  1
+286       |  +
+287       |  _equalsCount1
+288       |  _equalsCount1
+289       |  :=
+290       |  f
+291       |  _equalsPivote1
+292       |  CMP
+293       |  300
+294       |  BNE
+295       |  1
+296       |  +
+297       |  _equalsCount1
+298       |  _equalsCount1
+299       |  :=
+300       |  _equalsCount1
+301       |  _int_3
+302       |  CMP
+303       |  468
+304       |  BGE
+305       |  0
+306       |  _allEqualsResults
+307       |  :=
+308       |  0
+309       |  _equalsCount1
+310       |  :=
+311       |  b
+312       |  _equalsPivote1
+313       |  :=
+314       |  h
+315       |  _equalsPivote1
+316       |  CMP
+317       |  324
+318       |  BNE
+319       |  1
+320       |  +
+321       |  _equalsCount1
+322       |  _equalsCount1
+323       |  :=
+324       |  f
+325       |  _int_44
+326       |  *
+327       |  _equalsPivote1
+328       |  CMP
+329       |  336
+330       |  BNE
+331       |  1
+332       |  +
+333       |  _equalsCount1
+334       |  _equalsCount1
+335       |  :=
+336       |  c
+337       |  f
+338       |  *
+339       |  h
+340       |  /
+341       |  _equalsPivote1
+342       |  CMP
+343       |  350
+344       |  BNE
+345       |  1
+346       |  +
+347       |  _equalsCount1
+348       |  _equalsCount1
+349       |  :=
+350       |  _equalsCount1
+351       |  _allEqualsPivote1
+352       |  :=
+353       |  b
+354       |  f
+355       |  *
+356       |  _allEqualsPivote2
+357       |  :=
+358       |  _int_4
+359       |  _allEqualsPivote3
+360       |  :=
+361       |  _int_3
+362       |  _allEqualsPivote1
+363       |  CMP
+364       |  400
+365       |  BNE
+366       |  _int_5
+367       |  _allEqualsPivote2
+368       |  CMP
+369       |  400
+370       |  BNE
+371       |  _int_6
+372       |  _allEqualsPivote3
+373       |  CMP
+374       |  400
+375       |  BNE
+376       |  _int_1
+377       |  _int_5
+378       |  /
+379       |  _allEqualsPivote1
+380       |  CMP
+381       |  400
+382       |  BNE
+383       |  _int_55
+384       |  _allEqualsPivote2
+385       |  CMP
+386       |  400
+387       |  BNE
+388       |  _int_2
+389       |  _int_3
+390       |  _int_4
+391       |  *
+392       |  +
+393       |  _allEqualsPivote3
+394       |  CMP
+395       |  400
+396       |  BNE
+397       |  1
+398       |  _allEqualsResults
+399       |  :=
+400       |  _allEqualsResults
+401       |  1
+402       |  CMP
+403       |  468
+404       |  BNE
+405       |  0
+406       |  _equalsCount1
+407       |  :=
+408       |  b
+409       |  _equalsPivote1
+410       |  :=
+411       |  c
+412       |  _equalsPivote1
+413       |  CMP
+414       |  421
+415       |  BNE
+416       |  1
+417       |  +
+418       |  _equalsCount1
+419       |  _equalsCount1
+420       |  :=
+421       |  h
+422       |  _equalsPivote1
+423       |  CMP
+424       |  431
+425       |  BNE
+426       |  1
+427       |  +
+428       |  _equalsCount1
+429       |  _equalsCount1
+430       |  :=
+431       |  _equalsCount1
+432       |  f
+433       |  *
+434       |  0
+435       |  _equalsCount1
+436       |  :=
+437       |  _int_15
+438       |  _equalsPivote1
+439       |  :=
+440       |  c
+441       |  _equalsPivote1
+442       |  CMP
+443       |  450
+444       |  BNE
+445       |  1
+446       |  +
+447       |  _equalsCount1
+448       |  _equalsCount1
+449       |  :=
+450       |  f
+451       |  _equalsPivote1
+452       |  CMP
+453       |  460
+454       |  BNE
+455       |  1
+456       |  +
+457       |  _equalsCount1
+458       |  _equalsCount1
+459       |  :=
+460       |  _equalsCount1
+461       |  _int_1
+462       |  +
+463       |  /
+464       |  h
+465       |  :=
+466       |  264
+467       |  BI
+468       |  0
+469       |  _equalsCount1
+470       |  :=
+471       |  c
+472       |  b
+473       |  +
+474       |  _equalsPivote1
+475       |  :=
+476       |  0
+477       |  _equalsCount2
+478       |  :=
+479       |  _int_1
+480       |  _equalsPivote2
+481       |  :=
+482       |  _int_1
+483       |  _equalsPivote2
+484       |  CMP
+485       |  492
+486       |  BNE
+487       |  1
+488       |  +
+489       |  _equalsCount2
+490       |  _equalsCount2
+491       |  :=
+492       |  _equalsCount2
+493       |  _equalsPivote1
+494       |  CMP
+495       |  502
+496       |  BNE
+497       |  1
+498       |  +
+499       |  _equalsCount1
+500       |  _equalsCount1
+501       |  :=
+502       |  _int_3
+503       |  _equalsPivote1
+504       |  CMP
+505       |  512
+506       |  BNE
+507       |  1
+508       |  +
+509       |  _equalsCount1
+510       |  _equalsCount1
+511       |  :=
+512       |  _int_5
+513       |  _equalsPivote1
+514       |  CMP
+515       |  522
+516       |  BNE
+517       |  1
+518       |  +
+519       |  _equalsCount1
+520       |  _equalsCount1
+521       |  :=
+522       |  _equalsCount1
+523       |  h
+524       |  :=

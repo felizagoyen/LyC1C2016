@@ -15,43 +15,46 @@ h dd ?
 string_var db STRINGMAXLENGTH dup(?),'$'
 int_var dd ?
 real_var dd ?
-_Grupo06 db "Grupo06",'$',24 dup(?)
-_32764 dd 32764.000000
-_12349.123111 dd 12349.123111
-_1. dd 1.000000
-_.1 dd 0.100000
-_6 dd 6.000000
-_56 dd 56.000000
-_59 dd 59.000000
-_1 dd 1.000000
-_3 dd 3.000000
-_5 dd 5.000000
-_7 dd 7.000000
-_19 dd 19.000000
-_13 dd 13.000000
-_2 dd 2.000000
-_123 dd 123.000000
-_1.5 dd 1.500000
-_2.5 dd 2.500000
-_1.0 dd 1.000000
-_15 dd 15.000000
-_10.1 dd 10.100000
-_string db "string",'$',25 dup(?)
-_HOLA db "HOLA",'$',27 dup(?)
-_55 dd 55.000000
-_1242 dd 1242.000000
-_69 dd 69.000000
-_53 dd 53.000000
-_0 dd 0.000000
-_Condicion_multiple_con_and db "Condicion multiple con and",'$',5 dup(?)
-_Condicion_multiple_con_or db "Condicion multiple con or",'$',6 dup(?)
-_Condicion_negada db "Condicion negada",'$',15 dup(?)
-@AllEqualsResults dd ?
-@allEqualsPivot1 dd ?
-@allEqualsPivot2 dd ?
-_4 dd 4.000000
-@allEqualsPivot3 dd ?
-_Condicion_negada db "Condicion negada",'$',15 dup(?)
-@equalsCount1 dd ?
-@equalsPivot1 dd ?
-_44 dd 44.000000
+_str_Grupo06 db "Grupo06",'$',24 dup(?)
+_str_123456789012345678901234567890 db "123456789012345678901234567890",'$',1 dup(?)
+_int_32767 dd 32767.000000
+_real_12349.123111 dd 12349.123111
+_real_1. dd 1.000000
+_real_.1 dd 0.100000
+_int_6 dd 6.000000
+_int_56 dd 56.000000
+_int_59 dd 59.000000
+_int_1 dd 1.000000
+_int_3 dd 3.000000
+_int_5 dd 5.000000
+_int_7 dd 7.000000
+_int_19 dd 19.000000
+_int_13 dd 13.000000
+_int_2 dd 2.000000
+_int_123 dd 123.000000
+_real_1.5 dd 1.500000
+_real_2.5 dd 2.500000
+_real_1.0 dd 1.000000
+_int_15 dd 15.000000
+_real_10.1 dd 10.100000
+_str_string db "string",'$',25 dup(?)
+_str_HOLA db "HOLA",'$',27 dup(?)
+_int_55 dd 55.000000
+_int_1242 dd 1242.000000
+_int_69 dd 69.000000
+_int_53 dd 53.000000
+_int_0 dd 0.000000
+_str_Condicion_multiple_con_and db "Condicion multiple con and",'$',5 dup(?)
+_str_Condicion_multiple_con_or db "Condicion multiple con or",'$',6 dup(?)
+_str_Condicion_negada db "Condicion negada",'$',15 dup(?)
+_allEqualsResults dd ?
+_allEqualsPivote1 dd ?
+_allEqualsPivote2 dd ?
+_int_4 dd 4.000000
+_allEqualsPivote3 dd ?
+_str_Condicion_negada db "Condicion negada",'$',15 dup(?)
+_equalsCount1 dd ?
+_equalsPivote1 dd ?
+_int_44 dd 44.000000
+_equalsCount2 dd ?
+_equalsPivote2 dd ?
