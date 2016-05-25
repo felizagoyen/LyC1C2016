@@ -82,6 +82,7 @@ struct_polish *pop_stack();
 void create_assembler_header();
 void create_ts_file();  
 void validate_condition_type();
+char * invert_comparator(char *);
 
 %}
 %union {
@@ -389,7 +390,14 @@ condition:
         }
     | comparation OR_OPERATOR comparation
         {
-          comparation_number = 2;
+          char aux[10];
+          struct_polish *pa = pop_stack();
+          struct_polish *p = pop_stack();
+          push_stack(pa);
+          sprintf(aux, "%d", polish_index);
+          p->element = strdup(&aux[0]);
+          p->next->element = strdup(invert_comparator(p->next->element));
+          comparation_number = 1;
         }
     | NOT 
         {
@@ -422,7 +430,7 @@ if_else:
           int x = 0;
           for(x; x < comparation_number; x++) {
             struct_polish *p = pop_stack();
-            sprintf(aux, "%d", (polish_index + 2));
+            sprintf(aux, "%d", polish_index);
             p->element = strdup(&aux[0]);
           }
           insert_polish("");
@@ -1010,3 +1018,11 @@ void validate_condition_type() {
   types_validations_count = -1;
 }
 
+char * invert_comparator(char * comparator) {
+  if(strcmp(comparator, "BEQ") == 0) return "BNE";
+  if(strcmp(comparator, "BNE") == 0) return "BEQ";
+  if(strcmp(comparator, "BGT") == 0) return "BLE";
+  if(strcmp(comparator, "BGE") == 0) return "BLT";
+  if(strcmp(comparator, "BLT") == 0) return "BGE";
+  if(strcmp(comparator, "BLE") == 0) return "BGT"; 
+}
