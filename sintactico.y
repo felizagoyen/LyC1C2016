@@ -64,6 +64,7 @@ int all_equals_stack = 0;
 char while_start[10];
 int comparation_number;
 int if_not = 0;
+int iguales_index = 0;
 
 void add_var_symbol_table();
 void add_symbol_table_aux(char *, char *);
@@ -205,21 +206,6 @@ assignment:
           insert_polish($1);
           insert_polish($2);
         }
-    | ID ASSIGNMENT_OPERATOR iguales
-        {
-          validate_var_type($1, "NUMBER");
-          LOG_MSG("\nSentencia #IGUALES");
-          insert_polish($1);
-          insert_polish($2);
-        }
-    | ID ASSIGNMENT_OPERATOR all_equal
-        {
-          validate_var_type($1, "NUMBER");
-          LOG_MSG("\nSentencia ALLEQUALS");
-          insert_polish($1);
-          insert_polish($2);
-          all_equals_pivote_index = 1;
-        }      
 
 expression:
       expression ADDITION_OPERATOR term
@@ -263,6 +249,10 @@ factor:
           insert_polish($1);
         }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
+    | iguales
+        {
+          LOG_MSG("\nSentencia #IGUALES");
+        }
 
 string_concatenation:
       STRING_CTE
@@ -373,7 +363,12 @@ comparation:
             insert_polish("BEQ");
           }
         }
-  
+    | all_equal
+        {
+          LOG_MSG("\nSentencia ALLEQUALS");
+          all_equals_pivote_index = 1;
+        }
+
 condition:
       comparation
         {
@@ -523,20 +518,31 @@ expression_list_all_equals_pivote:
 iguales:
       IGUALES
           {
+            char aux[10], counter_name[15] = "__equalsCount";
+            iguales_index++;
+            sprintf(aux, "%d", iguales_index);
+            strcat(counter_name, aux);
             insert_polish("0");
-            insert_polish("_equalsCount");
+            insert_polish(strdup(&counter_name[0]));
             insert_polish(":=");  
-            add_symbol_table_aux("_equalsCount", "integer");
+            add_symbol_table_aux(&counter_name[0], "integer");
           }
       OPEN_PARENTHESIS expression
           {
-            insert_polish("_equalsPivot");
+            char aux[10], pivote_name[15] = "__equalsPivot";
+            sprintf(aux, "%d", iguales_index);
+            strcat(pivote_name, aux);
+            insert_polish(strdup(&pivote_name[0]));
             insert_polish(":=");
-            add_symbol_table_aux("_equalsCount", "integer");
+            add_symbol_table_aux(&pivote_name[0], "integer");
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
-            insert_polish("_equalsCount");
+            char aux[10], counter_name[15] = "__equalsCount";
+            sprintf(aux, "%d", iguales_index);
+            strcat(counter_name, aux);
+            insert_polish(strdup(&counter_name[0]));
+            iguales_index--;
           }
 
 expression_list_equals:
@@ -876,16 +882,19 @@ void create_intermediate_file() {
 }
 
 void create_equals_condition() {
-  char aux[10];
-  insert_polish("_igualesPivot");
+  char aux[10], pivote_name[15] = "__equalsPivote", counter_name[15] = "__equalsCount";
+  sprintf(aux, "%d", iguales_index);
+  strcat(pivote_name, aux);  
+  strcat(counter_name, aux);  
+  insert_polish(strdup(&pivote_name[0]));
   insert_polish("CMP");
   sprintf(aux, "%d", (polish_index + 7));
   insert_polish(strdup(&aux[0]));
   insert_polish("BNE");
   insert_polish("1");
   insert_polish("+");
-  insert_polish("_equalsCount");
-  insert_polish("_equalsCount");
+  insert_polish(strdup(&counter_name[0]));
+  insert_polish(strdup(&counter_name[0]));
   insert_polish(":=");
 }
 
