@@ -85,7 +85,7 @@ int add_symbol_table(char *, char *, char *);
 struct_ts *get_ts_element_by_name(char *);
 struct_ts *get_ts_element_by_value(char *);
 void add_ts_element(char *, char *, char *);
-char *replace_space_whit_underscore(char *);
+char *replace_space_with_underscore(char *);
 
 %}
 %union {
@@ -943,7 +943,7 @@ int add_symbol_table(char *name, char* type, char *value) {
     strcat(string_name, "_str_");
   } 
   strcat(string_name, name);
-  char *name_aux = replace_space_whit_underscore(string_name);
+  char *name_aux = replace_space_with_underscore(string_name);
 
   if(get_ts_element_by_name(name_aux) == NULL) {
     add_ts_element(name_aux, type, value);
@@ -953,7 +953,7 @@ int add_symbol_table(char *name, char* type, char *value) {
   }
 }
 
-char *replace_space_whit_underscore(char * string) {
+char *replace_space_with_underscore(char * string) {
   int x = 0;
   for(x; x < strlen(string); x++) {
     if(string[x] == ' ' || string[x] == '-'){
