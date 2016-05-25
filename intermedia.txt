@@ -1,4 +1,4 @@
-"sarasa"
+_Grupo06
 string_var
 :=
 32764
@@ -101,17 +101,17 @@ e
 a
 :=
 a
-"string"
+string
 ++
 a
 :=
-"string"
+string
 a
 ++
 a
 :=
-"string"
-"string"
+string
+string
 ++
 a
 :=
@@ -120,7 +120,7 @@ e
 :=
 a
 WRITE
-"HOLA"
+_HOLA
 WRITE
 b
 READ
@@ -177,7 +177,7 @@ b
 CMP
 184
 BGE
-"Conicion multiple con and"
+_Condicion_multiple_con_and
 WRITE
 170
 BI
@@ -191,14 +191,14 @@ b
 CMP
 196
 BGT
-"Conicion multiple con or"
+_Condicion_multiple_con_or
 WRITE
 h
 b
 CMP
 203
 BEQ
-"Conicion negada"
+_Condicion_negada
 WRITE
 0
 @AllEqualsResults
@@ -258,7 +258,7 @@ BI
 CMP
 263
 BEQ
-"Conicion negada"
+_Condicion_negada
 WRITE
 0
 @equalsCount1

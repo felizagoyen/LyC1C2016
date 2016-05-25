@@ -6,7 +6,7 @@ DIM [string_var, int_var, real_var] AS [string, integer, real]
 -/ Prueba de /- Comentario /-
 
 -/ Prueba Asignaciones /-
-string_var := "sarasa"
+string_var := "Grupo06"
 int_var := 32764
 real_var := 12349.123111
 real_var := 1.
@@ -61,21 +61,21 @@ ENDWHILE
 
 -/ Prueba condiciones multiples /-
 WHILE (f > 3 && b < 3)
-	WRITE "Conicion multiple con and"
+	WRITE "Condicion multiple con and"
 ENDWHILE
 
 IF (f >= 3 || b <= 3)
-	WRITE "Conicion multiple con or"
+	WRITE "Condicion multiple con or"
 ENDIF
 
 -/ Prueba condicion negada /-
 IF(NOT h == b) 
-	WRITE "Conicion negada"
+	WRITE "Condicion negada"
 ENDIF
 
 -/ Temas Especiales /-
 IF(NOT AllEqual([1,2,4],[3,5,6],[1/5,55,2+3*4])) 
-	WRITE "Conicion negada"
+	WRITE "Condicion negada"
 ENDIF
 
 WHILE(#Iguales(3,[b,h,f]) < 3 && AllEqual([#Iguales(b,[h,f*44,c*f/h]),b*f,4],[3,5,6],[1/5,55,2+3*4]))

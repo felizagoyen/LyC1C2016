@@ -83,7 +83,9 @@ char *invert_comparator(char *);
 void create_block_condition(char *);
 int add_symbol_table(char *, char *, char *);
 struct_ts *get_ts_element_by_name(char *);
+struct_ts *get_ts_element_by_value(char *);
 void add_ts_element(char *, char *, char *);
+char *replace_space_whit_underscore(char *);
 
 %}
 %union {
@@ -252,20 +254,21 @@ string_concatenation:
           LOG_MSG("Regla 14. string_concatenation -> STRING_CTE\n");
           types_validations_count++;
           strcpy(types_validations[types_validations_count], "STRING");
-          insert_polish($1);
+          struct_ts *p = get_ts_element_by_value($1);
+          insert_polish(strdup(p->name));
         }
     | STRING_CTE CONCATENATION_OPERATOR STRING_CTE
         {
           LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR STRING_CTE\n");
-          insert_polish($1);
-          insert_polish($3);
+          insert_polish(strdup(replace_space_whit_underscore($1)));
+          insert_polish(strdup(replace_space_whit_underscore($3)));
           insert_polish($2);
         }
     | STRING_CTE CONCATENATION_OPERATOR ID
         {
           LOG_MSG("Regla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR ID\n");
           validate_var_type($3, "STRING");
-          insert_polish($1);
+          insert_polish(strdup(replace_space_whit_underscore($1)));
           insert_polish($3);
           insert_polish($2);
         }
@@ -274,7 +277,7 @@ string_concatenation:
           LOG_MSG("Regla 14. string_concatenation -> ID CONCATENATION_OPERATOR STRING_CTE\n");
           validate_var_type($1, "STRING");
           insert_polish($1);
-          insert_polish($3);
+          insert_polish(strdup(replace_space_whit_underscore($3)));
           insert_polish($2);
         }
     | ID CONCATENATION_OPERATOR ID
@@ -884,27 +887,33 @@ struct_ts *get_ts_element_by_name(char *name) {
   return NULL;
 }
 
+struct_ts *get_ts_element_by_value(char *value) {
+  struct_ts *p = ts;
+  while(p) {
+    if(p->value != NULL && strcmp(p->value, value) == 0) {
+      return p;
+    }
+    p = p->next;
+  } 
+  return NULL;
+}
+
 void add_ts_element(char * name, char *type, char *value) {
   struct_ts *aux = malloc(sizeof(struct_ts));
-
-  aux->name = strdup(name);
+  aux->name = strdup(replace_space_whit_underscore(name));
   aux->type = strdup(type);
+
   if(value != NULL) {
     aux->value = strdup(value); 
   } else {
     aux->value = NULL;
   }
   if(strcmp("STRING_CTE", type) == 0) {
-    int x = 0;
     aux->length = strlen(value);
-    for(x; x < aux->length; x++) {
-      if(aux->name[x] == ' '){
-        aux->name[x] = '_';
-      }
-    }
   } else {
     aux->length = 0;
   }
+
   aux->next = NULL;
 
   if(ts) {
@@ -918,14 +927,6 @@ void add_ts_element(char * name, char *type, char *value) {
 
 int add_symbol_table(char *name, char* type, char *value) {
   char string_name[512] = "\0";
-  
-  //Si es un string, le saco las comillas
-  if(strcmp("STRING_CTE", type) == 0) {
-      name[strlen(name)-1] = '\0';
-      name++;
-      value++;
-  }
-
   //Si no es un ID le coloco guion bajo
   if(strcmp("INT_CTE", type) == 0 || strcmp("REAL_CTE", type) == 0 || strcmp("STRING_CTE", type) == 0) {
     strcat(string_name, "_");
@@ -940,4 +941,14 @@ int add_symbol_table(char *name, char* type, char *value) {
   } else {
     return 0;
   }
+}
+
+char *replace_space_whit_underscore(char * string) {
+  int x = 0;
+  for(x; x < strlen(string); x++) {
+    if(string[x] == ' '){
+      string[x] = '_';
+    }
+  } 
+  return string;
 }

@@ -15,7 +15,7 @@ h dd ?
 string_var db STRINGMAXLENGTH dup(?),'$'
 int_var dd ?
 real_var dd ?
-_sarasa db "sarasa",'$',25 dup(?)
+_Grupo06 db "Grupo06",'$',24 dup(?)
 _32764 dd 32764.000000
 _12349.123111 dd 12349.123111
 _1. dd 1.000000
@@ -43,15 +43,15 @@ _1242 dd 1242.000000
 _69 dd 69.000000
 _53 dd 53.000000
 _0 dd 0.000000
-_Conicion_multiple_con_and db "Conicion multiple con and",'$',6 dup(?)
-_Conicion_multiple_con_or db "Conicion multiple con or",'$',7 dup(?)
-_Conicion_negada db "Conicion negada",'$',16 dup(?)
+_Condicion_multiple_con_and db "Condicion multiple con and",'$',5 dup(?)
+_Condicion_multiple_con_or db "Condicion multiple con or",'$',6 dup(?)
+_Condicion_negada db "Condicion negada",'$',15 dup(?)
 @AllEqualsResults dd ?
 @allEqualsPivot1 dd ?
 @allEqualsPivot2 dd ?
 _4 dd 4.000000
 @allEqualsPivot3 dd ?
-_Conicion_negada db "Conicion negada",'$',16 dup(?)
+_Condicion_negada db "Condicion negada",'$',15 dup(?)
 @equalsCount1 dd ?
 @equalsPivot1 dd ?
 _44 dd 44.000000

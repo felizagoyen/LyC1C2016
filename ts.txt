@@ -9,7 +9,7 @@ h                                |  integer        |                            
 string_var                       |  string         |                                   |  0
 int_var                          |  integer        |                                   |  0
 real_var                         |  real           |                                   |  0
-_sarasa                          |  STRING_CTE     |  sarasa                           |  6
+_Grupo06                         |  STRING_CTE     |  Grupo06                          |  7
 _32764                           |  INT_CTE        |  32764                            |  0
 _12349.123111                    |  REAL_CTE       |  12349.123111                     |  0
 _1.                              |  REAL_CTE       |  1.                               |  0
@@ -37,15 +37,15 @@ _1242                            |  INT_CTE        |  1242                      
 _69                              |  INT_CTE        |  69                               |  0
 _53                              |  INT_CTE        |  53                               |  0
 _0                               |  INT_CTE        |  0                                |  0
-_Conicion_multiple_con_and       |  STRING_CTE     |  Conicion multiple con and        |  25
-_Conicion_multiple_con_or        |  STRING_CTE     |  Conicion multiple con or         |  24
-_Conicion_negada                 |  STRING_CTE     |  Conicion negada                  |  15
+_Condicion_multiple_con_and      |  STRING_CTE     |  Condicion multiple con and       |  26
+_Condicion_multiple_con_or       |  STRING_CTE     |  Condicion multiple con or        |  25
+_Condicion_negada                |  STRING_CTE     |  Condicion negada                 |  16
 @AllEqualsResults                |  integer        |                                   |  0
 @allEqualsPivot1                 |  integer        |                                   |  0
 @allEqualsPivot2                 |  integer        |                                   |  0
 _4                               |  INT_CTE        |  4                                |  0
 @allEqualsPivot3                 |  integer        |                                   |  0
-_Conicion_negada                 |  STRING_CTE     |  Conicion negada                  |  15
+_Condicion_negada                |  STRING_CTE     |  Condicion negada                 |  16
 @equalsCount1                    |  integer        |                                   |  0
 @equalsPivot1                    |  integer        |                                   |  0
 _44                              |  INT_CTE        |  44                               |  0

@@ -11,7 +11,7 @@
 #include "y.tab.h"
 
 #define LOGGER 0
-#define STRING_MAX_LENGTH 32
+#define STRING_MAX_LENGTH 30
 
 #if LOGGER
   #define LOG_MSG printf
@@ -19,7 +19,7 @@
   #define LOG_MSG(...)
 #endif
 
-void string_validation(char *);
+char *string_validation(char *);
 void int_range_validation(char *);
 void real_range_validation(char *);
 void id_name_validation(char *);
@@ -76,7 +76,7 @@ COMMENT             -\/.*\/-
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
 {INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "INT_CTE", yytext); LOG_MSG("INT_CTE"); return INT_CTE; }
 {REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "REAL_CTE", yytext); LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "STRING_CTE", yytext); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+{STRING_CTE}        { char *string = string_validation(strdup(yytext)); yylval.str_value=string; add_symbol_table(string, "STRING_CTE", string); LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { id_name_validation(yytext); yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 "\n"                { yylineno; }
 %%
@@ -94,17 +94,14 @@ void id_name_validation(char * id) {
 /*
  * Valida la cantidad de caracteres de los strings
  */
-void string_validation(char * string) {
-  int count=1;
-  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
-    count++;
-  }
-  if(string[count]=='"') {
-    return;
-  } else if(count > STRING_MAX_LENGTH){
+char *string_validation(char * string) {
+  string[strlen(string)-1] = '\0';
+  string++;
+  if(strlen(string) > STRING_MAX_LENGTH) {
     printf("Rango excedido de los strings\n");
     exit(1);
   }
+  return string;
 }
 
 /*
