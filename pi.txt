@@ -1,0 +1,3 @@
+DIM [a] AS [integer]
+
+WRITE "Conicion multiple con or"
