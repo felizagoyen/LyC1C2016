@@ -3,4 +3,9 @@
 a                                |  integer        |                                   |  0
 b                                |  integer        |                                   |  0
 c                                |  integer        |                                   |  0
+@AllEqualsResults                |  integer        |                                   |  0
+_1                               |  INT_CTE        |  1                                |  0
+@allEqualsPivot1                 |  integer        |                                   |  0
+_2                               |  INT_CTE        |  2                                |  0
+_3                               |  INT_CTE        |  3                                |  0
 _Conicion_multiple_con_or        |  STRING_CTE     |  Conicion multiple con or         |  24

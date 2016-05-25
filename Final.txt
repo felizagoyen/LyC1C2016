@@ -9,4 +9,9 @@ STRINGMAXLENGTH equ 31
 a dd ?
 b dd ?
 c dd ?
+@AllEqualsResults dd ?
+_1 dd 1.000000
+@allEqualsPivot1 dd ?
+_2 dd 2.000000
+_3 dd 3.000000
 _Conicion_multiple_con_or db "Conicion multiple con or",'$',7 dup(?)

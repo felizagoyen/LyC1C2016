@@ -476,20 +476,29 @@ while:
       ENDWHILE 	  
 	  
 all_equal:
-      ALL_EQUAL OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
+      ALL_EQUAL
+        {
+          insert_polish("0");
+          insert_polish("@AllEqualsResults");
+          insert_polish(":=");
+          add_symbol_table_aux("@AllEqualsResults", "integer");
+        }
+      OPEN_PARENTHESIS OPEN_CLASP expression_list_all_equals_pivote CLOSE_CLASP COMA_SEPARATOR OPEN_CLASP expressions_list_all_equals_to_compare CLOSE_CLASP CLOSE_PARENTHESIS
         {
           char aux[10];
           int i = 0;
           for(i; i < all_equals_stack; i++) {
             struct_polish *p = pop_stack();
-            sprintf(aux, "%d", (polish_index + 3));
+            sprintf(aux, "%d", (polish_index + 5));
             p->element = strdup(&aux[0]);
           }
           insert_polish("1");
-          sprintf(aux, "%d", (polish_index + 3));
+          insert_polish("@AllEqualsResults");
+          insert_polish(":=");
+          sprintf(aux, "%d", (polish_index + 2));
           insert_polish(strdup(&aux[0]));
           insert_polish("BI");
-          insert_polish("0");
+          insert_polish("@AllEqualsResults");
           all_equals_stack = 0;
         }
 
@@ -535,7 +544,7 @@ expression_list_all_equals_pivote:
 iguales:
       IGUALES
           {
-            char aux[10], counter_name[15] = "__equalsCount";
+            char aux[10], counter_name[15] = "@equalsCount";
             iguales_index++;
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
@@ -546,7 +555,7 @@ iguales:
           }
       OPEN_PARENTHESIS expression
           {
-            char aux[10], pivote_name[15] = "__equalsPivot";
+            char aux[10], pivote_name[15] = "@equalsPivot";
             sprintf(aux, "%d", iguales_index);
             strcat(pivote_name, aux);
             insert_polish(strdup(&pivote_name[0]));
@@ -555,7 +564,7 @@ iguales:
           } 
       COMA_SEPARATOR OPEN_CLASP expression_list_equals CLOSE_CLASP CLOSE_PARENTHESIS
           {
-            char aux[10], counter_name[15] = "__equalsCount";
+            char aux[10], counter_name[15] = "@equalsCount";
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
             insert_polish(strdup(&counter_name[0]));
@@ -905,7 +914,7 @@ void create_intermediate_file() {
 }
 
 void create_equals_condition() {
-  char aux[10], pivote_name[15] = "__equalsPivote", counter_name[15] = "__equalsCount";
+  char aux[10], pivote_name[15] = "@equalsPivote", counter_name[15] = "@equalsCount";
   sprintf(aux, "%d", iguales_index);
   strcat(pivote_name, aux);  
   strcat(counter_name, aux);  
@@ -922,7 +931,7 @@ void create_equals_condition() {
 }
 
 void create_all_equals_pivote() {
-  char str[10], aux[20] = "_allEqualsPivot";
+  char str[10], aux[20] = "@allEqualsPivot";
   sprintf(str, "%d", all_equals_pivote_index);
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
@@ -936,7 +945,7 @@ void create_all_equals_condition() {
     LOG_MSG("\n\nLa lista tiene mayor cantidad de elementos que el pivote en all equals\n");
     exit(1);
   }
-  char str[10], aux[20] = "_allEqualsPivot";
+  char str[10], aux[20] = "@allEqualsPivot";
   sprintf(str, "%d", all_equals_to_compare_index);
   strcat(aux, str);
   insert_polish(strdup(&aux[0]));
