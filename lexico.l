@@ -11,7 +11,7 @@
 #include "y.tab.h"
 
 #define LOGGER 0
-#define STRING_MAX_LENGTH 32
+#define STRING_MAX_LENGTH 30
 
 #if LOGGER
   #define LOG_MSG printf
@@ -19,7 +19,7 @@
   #define LOG_MSG(...)
 #endif
 
-void string_validation(char *);
+char *string_validation(char *);
 void int_range_validation(char *);
 void real_range_validation(char *);
 void id_name_validation(char *);
@@ -74,9 +74,9 @@ COMMENT             -\/.*\/-
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
-{INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("INT_CTE"); LOG_MSG("INT_CTE"); return INT_CTE; }
-{REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("REAL_CTE"); LOG_MSG("REAL_CTE"); return REAL_CTE; }
-{STRING_CTE}        { string_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table("STRING_CTE"); LOG_MSG("STRING_CTE"); return STRING_CTE; }
+{INT_CTE}           { int_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "INT_CTE", yytext); LOG_MSG("INT_CTE"); return INT_CTE; }
+{REAL_CTE}          { real_range_validation(yytext); yylval.str_value=strdup(yytext); add_symbol_table(yytext, "REAL_CTE", yytext); LOG_MSG("REAL_CTE"); return REAL_CTE; }
+{STRING_CTE}        { char *string = string_validation(strdup(yytext)); yylval.str_value=string; add_symbol_table(string, "STRING_CTE", string); LOG_MSG("STRING_CTE"); return STRING_CTE; }
 {ID}                { id_name_validation(yytext); yylval.str_value=strdup(yytext); LOG_MSG("ID"); return ID; }
 "\n"                { yylineno; }
 %%
@@ -86,7 +86,7 @@ COMMENT             -\/.*\/-
  */
 void id_name_validation(char * id) {
   if(strlen(id) > 30) {
-    printf("Los ids solo pueden tener 30 caracteres en el nombre\n");
+    printf("\n\nLinea %d. Los ids solo pueden tener contener 30 caracteres en el nombre\n", yylineno);
     exit(1);
   }
 }
@@ -94,17 +94,14 @@ void id_name_validation(char * id) {
 /*
  * Valida la cantidad de caracteres de los strings
  */
-void string_validation(char * string) {
-  int count=1;
-  while(string[count]!='"' && string[count]!='\n' && count<=STRING_MAX_LENGTH) {
-    count++;
-  }
-  if(string[count]=='"') {
-    return;
-  } else if(count > STRING_MAX_LENGTH){
-    printf("Rango excedido de los strings\n");
+char *string_validation(char * string) {
+  string[strlen(string)-1] = '\0';
+  string++;
+  if(strlen(string) > STRING_MAX_LENGTH) {
+    printf("\n\nLinea %d. Rango excedido de los strings. Solo se admiten 30 caracteres\n", yylineno);
     exit(1);
   }
+  return string;
 }
 
 /*
@@ -127,7 +124,7 @@ void int_range_validation(char * number) {
       return;
     }
   }
-  printf("Rango excedido de los enteros\n");
+  printf("\n\nLinea %d. Rango excedido de los enteros\n", yylineno);
   exit(-1);
 }
 
@@ -149,7 +146,7 @@ void real_range_validation(char * number) {
     }
   }
   if(integer_part>(3.402823466*pow(10,38))) { //verifica que la parte entera se encuentre dentro del rango correspondiente
-    printf("Rango excedido de los reales\n");
+    printf("\n\nLinea %d. Rango excedido de los reales\n", yylineno);
     exit(1);
   }
   count+=2;
@@ -158,7 +155,7 @@ void real_range_validation(char * number) {
     count++;
   }
   if(number_of_decimals>6) {  //verifica que no se exceda de la cantidad de decimales permitidos
-    printf("Rango excedido de los reales\n");
+    printf("\n\nLinea %d. Rango excedido de los reales\n", yylineno);
     exit(1);
   }
 } 
