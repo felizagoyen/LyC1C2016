@@ -4,7 +4,7 @@
 
 .DATA
 
-STRINGMAXLENGTH equ 31
+STRINGMAXLENGTH equ 30
 
 a db STRINGMAXLENGTH dup(?),'$'
 e db STRINGMAXLENGTH dup(?),'$'
@@ -15,8 +15,8 @@ h dd ?
 string_var db STRINGMAXLENGTH dup(?),'$'
 int_var dd ?
 real_var dd ?
-_str_Grupo06 db "Grupo06",'$',24 dup(?)
-_str_123456789012345678901234567890 db "123456789012345678901234567890",'$',1 dup(?)
+_str_Grupo06 db "Grupo06",'$',23 dup(?)
+_str_123456789012345678901234567890 db "123456789012345678901234567890",'$',0 dup(?)
 _int_32767 dd 32767.000000
 _real_12349.123111 dd 12349.123111
 _real_1. dd 1.000000
@@ -37,21 +37,21 @@ _real_2.5 dd 2.500000
 _real_1.0 dd 1.000000
 _int_15 dd 15.000000
 _real_10.1 dd 10.100000
-_str_string db "string",'$',25 dup(?)
-_str_HOLA db "HOLA",'$',27 dup(?)
+_str_string db "string",'$',24 dup(?)
+_str_HOLA db "HOLA",'$',26 dup(?)
 _int_55 dd 55.000000
 _int_1242 dd 1242.000000
 _int_69 dd 69.000000
 _int_53 dd 53.000000
 _int_0 dd 0.000000
-_str_Condicion_multiple_con_and db "Condicion multiple con and",'$',5 dup(?)
-_str_Condicion_multiple_con_or db "Condicion multiple con or",'$',6 dup(?)
-_str_Condicion_negada db "Condicion negada",'$',15 dup(?)
-_str_Anidamiento_IF_WHILE db "Anidamiento IF-WHILE",'$',11 dup(?)
-_str_Anidamiento_WHILE_IF db "Anidamiento WHILE-IF",'$',11 dup(?)
-_str_Anidamiento_WHILE_WHILE db "Anidamiento WHILE-WHILE",'$',8 dup(?)
-_str_Anidamiento_IF_IF db "Anidamiento IF-IF",'$',14 dup(?)
-_str_Anidamiento_IF_IF_ELSE db "Anidamiento IF-IF-ELSE",'$',9 dup(?)
+_str_Condicion_multiple_con_and db "Condicion multiple con and",'$',4 dup(?)
+_str_Condicion_multiple_con_or db "Condicion multiple con or",'$',5 dup(?)
+_str_Condicion_negada db "Condicion negada",'$',14 dup(?)
+_str_Anidamiento_IF_WHILE db "Anidamiento IF-WHILE",'$',10 dup(?)
+_str_Anidamiento_WHILE_IF db "Anidamiento WHILE-IF",'$',10 dup(?)
+_str_Anidamiento_WHILE_WHILE db "Anidamiento WHILE-WHILE",'$',7 dup(?)
+_str_Anidamiento_IF_IF db "Anidamiento IF-IF",'$',13 dup(?)
+_str_Anidamiento_IF_IF_ELSE db "Anidamiento IF-IF-ELSE",'$',8 dup(?)
 _int_4 dd 4.000000
 _int_11 dd 11.000000
 _allEqualsResults dd ?
