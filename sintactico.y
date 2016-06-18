@@ -13,7 +13,7 @@
 
 #define TS_FILE "ts.txt"
 #define CODE_FILE "intermedia.txt"
-#define ASSEMBLER_FILE "Final.txt"
+#define ASSEMBLER_FILE "Final.asm"
 #define LOGGER 1
 #define STRING_MAX_LENGTH 30
 
@@ -52,6 +52,7 @@ int polish_index = 1;
 struct_polish *polish = NULL;
 struct_polish *last_element_polish = NULL;
 struct_stack *top_element_stack = NULL;
+struct_polish *polish_stack = NULL;
 
 char var_name[100][32];
 char var_type[100][10];
@@ -86,6 +87,10 @@ struct_ts *get_ts_element_by_name(char *);
 struct_ts *get_ts_element_by_value(char *);
 void add_ts_element(char *, char *, char *);
 char *replace_space_with_underscore(char *);
+void create_assembler_sentences();
+void recognize_element(FILE *, char *);
+struct_polish *pop_polish_stack();
+void push_polish_stack(char *);
 
 %}
 %union {
@@ -563,7 +568,6 @@ write:
           LOG_MSG("\nRegla 27. write -> WRITE ID");
           insert_polish($2);
           insert_polish("WRITE");
-          validate_var_type($2, "STRING");
           types_validations_count = -1;
         }
 
@@ -581,6 +585,9 @@ int main(int argc,char *argv[]) {
 
   //Genero archivo assembler
   create_assembler_header();
+
+  //Genero sentencias assembler
+  create_assembler_sentences();
 
   //Genero el archivo de la tabla de simbolos
   create_ts_file();
@@ -815,7 +822,7 @@ void create_assembler_header() {
     printf("\n\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
     exit(1);
   }
-  
+  fprintf(assembler_file, "extrn atoi:proc, itoa:proc, atof:proc, ftoa:proc\n\n");
   fprintf(assembler_file, ".MODEL LARGE\n");
   fprintf(assembler_file, ".386\n");
   fprintf(assembler_file, ".STACK 200h\n\n");
@@ -847,6 +854,8 @@ void create_assembler_header() {
     p = p->next;
   }
 
+  fprintf(assembler_file, "\n");
+  fclose(assembler_file);
 }
 
 void validate_condition_type() {
@@ -961,4 +970,111 @@ char *replace_space_with_underscore(char * string) {
     }
   } 
   return string;
+}
+
+void create_assembler_sentences() {
+  struct_polish *p = polish;
+  FILE *assembler_file;
+
+  //Abre el archivo de assembler
+  if((assembler_file = fopen(ASSEMBLER_FILE, "a")) == NULL) {
+    printf("\n\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
+    exit(1);
+  }
+
+  fprintf(assembler_file, ".CODE\n");
+  fprintf(assembler_file, ".startup\n");
+  fprintf(assembler_file, "mov ax, @data\n");
+  fprintf(assembler_file, "mov ds,ax\n\n");
+  while(p) {
+    recognize_element(assembler_file, p->element);
+    p = p->next;
+  }
+
+  fprintf(assembler_file, "mov ax, 4C00h\n");
+  fprintf(assembler_file, "int 21h\n\n");
+  fprintf(assembler_file, "END");
+  fclose(assembler_file);
+}
+
+void recognize_element(FILE *file, char *element) {
+  if(strcmp(element, "+") == 0) {
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file, "fld %s\n", aux2->element);
+    fprintf(file, "fld %s\n", aux1->element);
+    fprintf(file, "fadd %s\n", aux1->element);
+    fprintf(file, "@aux dq ?\n");
+    fprintf(file, "fstp @aux\n");
+    fprintf(file, "ffree st(0)\n");
+    free(aux1);
+    free(aux2);
+    push_polish_stack("@aux");
+  } else if(strcmp(element, "-") == 0) {
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file, "fld %s\n", aux2->element);
+    fprintf(file, "fld %s\n", aux1->element);
+    fprintf(file, "fsub %s\n", aux1->element);
+    fprintf(file, "@aux dq ?\n");
+    fprintf(file, "fstp @aux\n");
+    fprintf(file, "ffree st(0)\n");
+    free(aux1);
+    free(aux2);
+    push_polish_stack("@aux");
+  } else if(strcmp(element, "*") == 0) {
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file, "fld %s\n", aux2->element);
+    fprintf(file, "fld %s\n", aux1->element);
+    fprintf(file, "fmul %s\n", aux1->element);
+    fprintf(file, "@aux dq ?\n");
+    fprintf(file, "fstp @aux\n");
+    fprintf(file, "ffree st(0)\n");
+    free(aux1);
+    free(aux2);
+    push_polish_stack("@aux");
+  } else if(strcmp(element, "/") == 0) {
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file, "fld %s\n", aux2->element);
+    fprintf(file, "fld %s\n", aux1->element);
+    fprintf(file, "fdiv %s\n", aux1->element);
+    fprintf(file, "@aux dq ?\n");
+    fprintf(file, "fstp @aux\n");
+    fprintf(file, "ffree st(0)\n");
+    free(aux1);
+    free(aux2);
+    push_polish_stack("@aux");
+  } else if(strcmp(element, ":=") == 0) {
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file, "fld %s\n", aux2->element);
+    fprintf(file, "fstp %s\n", aux1->element);
+    fprintf(file, "ffree st(0)\n");
+    free(aux1);
+    free(aux2);
+    push_polish_stack("@aux");
+  } else if(strcmp(element, "WRITE") == 0) {
+    struct_polish *aux = pop_polish_stack();
+  } else {
+    push_polish_stack(element);
+  }
+}
+
+void push_polish_stack(char *element) {
+  struct_polish *p = malloc(sizeof(struct_polish)); //new element
+  p->element = element;
+  if(polish_stack) {
+    p->next = polish_stack;   
+  } else {
+    p->next = NULL;
+  }
+  polish_stack = p;  
+}
+
+struct_polish *pop_polish_stack() {
+  struct_polish *p = polish_stack;
+  polish_stack = polish_stack->next ;
+  return p; 
 }
