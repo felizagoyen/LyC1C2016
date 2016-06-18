@@ -15,7 +15,7 @@
 #define CODE_FILE "intermedia.txt"
 #define ASSEMBLER_FILE "Final.asm"
 #define LOGGER 1
-#define STRING_MAX_LENGTH 30
+#define STRING_MAX_LENGTH 31
 
 #if LOGGER
   #define LOG_MSG printf
