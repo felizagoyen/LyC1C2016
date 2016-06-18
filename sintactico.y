@@ -1082,11 +1082,11 @@ void operation_asm(FILE *file, char *operator) {
 void write_asm(FILE *file) {
   struct_polish *aux = pop_polish_stack();
   char *type = get_type_ts_by_name(aux->element);
-  if(strcmp(type,"INT") == 0) {
+  if(strcmp(type, "INT") == 0) {
     fprintf(file, "\tDisplayFloat \t%s,0\n", aux->element);
-  } else if(strcmp(type,"REAL") == 0) {
-    fprintf(file, "\tDisplayFloat \t%s,6\n", aux->element);
-  } else if(strcmp(type,"REAL") == 0) {
+  } else if(strcmp(type, "REAL") == 0) {
+    fprintf(file, "\tDisplayFloat \t%s,2\n", aux->element);
+  } else if(strcmp(type, "STRING") == 0) {
     fprintf(file, "\tMOV \tDX,OFFSET %s\n", aux->element);
     fprintf(file, "\tMOV \tah,09\n");
     fprintf(file, "\tINT \t21h\n");
