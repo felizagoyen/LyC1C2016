@@ -61,10 +61,12 @@ char types_validations[30][10];
 int all_equals_pivote_index = 1;
 int all_equals_to_compare_index = 1;
 int all_equals_stack = 0;
-char while_start[10];
-int comparation_number;
+int comparation_count[100];
+int nesting_count = 0;
 int if_not = 0;
 int iguales_index = 0;
+int aux_var_counter = 0;
+int string_counter = 1;
 
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
@@ -85,12 +87,16 @@ void create_block_condition(char *);
 int add_symbol_table(char *, char *, char *);
 struct_ts *get_ts_element_by_name(char *);
 struct_ts *get_ts_element_by_value(char *);
+char *get_type_ts_by_name(char *);
 void add_ts_element(char *, char *, char *);
-char *replace_space_with_underscore(char *);
+char *replace_dot_with_underscore(char *);
 void create_assembler_sentences();
 void recognize_element(FILE *, char *);
 struct_polish *pop_polish_stack();
 void push_polish_stack(char *);
+void operation_asm(FILE *, char *);
+void write_asm(FILE *);
+void crearte_auxiliar_var(char *);
 
 %}
 %union {
@@ -307,7 +313,8 @@ if:
           LOG_MSG("\nRegla 15. if -> IF OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDIF");
           char aux[10];
           int x = 0;
-          for(x; x < comparation_number; x++) {
+          nesting_count--;
+          for(x; x < comparation_count[nesting_count]; x++) {
             struct_polish *p = pop_stack();
             sprintf(aux, "%d", polish_index);
             p->element = strdup(&aux[0]);
@@ -319,7 +326,8 @@ if_else:
         {
           char aux[10];
           int x = 0;
-          for(x; x < comparation_number; x++) {
+          nesting_count--;
+          for(x; x < comparation_count[nesting_count]; x++) {
             struct_polish *p = pop_stack();
             sprintf(aux, "%d", polish_index + 2);
             p->element = strdup(&aux[0]);
@@ -335,7 +343,6 @@ if_else:
           struct_polish *p = pop_stack();
           sprintf(aux, "%d", polish_index);
           p->element = strdup(&aux[0]);
-          push_stack(last_element_polish);		  
         } 
   
 while:
@@ -356,7 +363,8 @@ while:
           LOG_MSG("\nRegla 17. while -> WHILE OPEN_PARENTHESIS condition CLOSE_PARENTHESIS sentences ENDWHILE");
           char aux[10];
           int x = 0;
-          for(x; x < comparation_number; x++) {
+          nesting_count--;
+          for(x; x < comparation_count[nesting_count]; x++) {
             struct_polish *p = pop_stack();
             sprintf(aux, "%d", (polish_index+2));
             p->element = strdup(&aux[0]); //escribe pos de salto condicional
@@ -369,11 +377,13 @@ while:
 condition:
       comparation
         {
-          comparation_number = 1;
+          comparation_count[nesting_count] = 1;
+          nesting_count++;
         }
     | comparation AND_OPERATOR comparation
         {
-          comparation_number = 2;
+          comparation_count[nesting_count] = 2;
+          nesting_count++;
         }
     | comparation OR_OPERATOR comparation
         {
@@ -384,7 +394,8 @@ condition:
           sprintf(aux, "%d", polish_index);
           p->element = strdup(&aux[0]);
           p->next->element = strdup(invert_comparator(p->next->element));
-          comparation_number = 1;
+          comparation_count[nesting_count] = 1;
+          nesting_count++;
         }
     | NOT 
         {
@@ -392,7 +403,8 @@ condition:
         }
     comparation
         {
-          comparation_number = 1;
+          comparation_count[nesting_count] = 1;
+          nesting_count++;
           if_not = 0;
         }
 
@@ -814,50 +826,6 @@ struct_polish *pop_stack() {
   return top;
 }
 
-void create_assembler_header() {
-  FILE *assembler_file;
-  char value[32];
-  //Abre el archivo de assembler
-  if((assembler_file = fopen(ASSEMBLER_FILE, "wt")) == NULL) {
-    printf("\n\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
-    exit(1);
-  }
-  fprintf(assembler_file, "extrn atoi:proc, itoa:proc, atof:proc, ftoa:proc\n\n");
-  fprintf(assembler_file, ".MODEL LARGE\n");
-  fprintf(assembler_file, ".386\n");
-  fprintf(assembler_file, ".STACK 200h\n\n");
-  fprintf(assembler_file, ".DATA\n\n");
-  fprintf(assembler_file, "STRINGMAXLENGTH equ %d\n\n", STRING_MAX_LENGTH);
-
-  struct_ts *p = ts;
-
-  while(p) {
-    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "real") == 0 || strcmp(p->type, "string") == 0) {
-      strcpy(value, "?");
-    } else {
-      strcpy(value, p->value);
-    }
-    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "INT_CTE") == 0
-      || strcmp(p->type, "real") == 0 || strcmp(p->type, "REAL_CTE") == 0) {
-      if(strcmp(value,"?") == 0) {
-        fprintf(assembler_file, "%s dd %s\n", p->name, value);
-      } else {
-        fprintf(assembler_file, "%s dd %f\n", p->name, atof(value));
-      }
-    } else {
-      if(strcmp(value,"?") == 0) {
-        fprintf(assembler_file, "%s db STRINGMAXLENGTH dup(?),'$'\n", p->name);
-      } else {
-        fprintf(assembler_file, "%s db \"%s\",'$',%d dup(?)\n", p->name, value, (STRING_MAX_LENGTH - p->length));
-      }
-    }
-    p = p->next;
-  }
-
-  fprintf(assembler_file, "\n");
-  fclose(assembler_file);
-}
-
 void validate_condition_type() {
   int x = 0;
   char type[10] = "NUMBER";
@@ -925,6 +893,7 @@ void add_ts_element(char * name, char *type, char *value) {
   }
   if(strcmp("STRING_CTE", type) == 0) {
     aux->length = strlen(value);
+    string_counter++;
   } else {
     aux->length = 0;
   }
@@ -942,17 +911,25 @@ void add_ts_element(char * name, char *type, char *value) {
 
 int add_symbol_table(char *name, char* type, char *value) {
   char string_name[512] = "\0";
-  
+  char *name_aux;
+
   //Si no es un ID le coloco guion bajo con identificador
   if(strcmp("INT_CTE", type) == 0) {
     strcat(string_name, "_int_");
+    strcat(string_name, name);
+    name_aux = string_name;
   } else if(strcmp("REAL_CTE", type) == 0) {
     strcat(string_name, "_real_");
+    strcat(string_name, name);
+    name_aux = replace_dot_with_underscore(string_name);
   } else if(strcmp("STRING_CTE", type) == 0) {
     strcat(string_name, "_str_");
-  } 
-  strcat(string_name, name);
-  char *name_aux = replace_space_with_underscore(string_name);
+    sprintf(string_name, "%s%d", string_name, string_counter);
+    name_aux = string_name;
+  } else {
+    strcat(string_name, name);
+    name_aux = string_name;
+  }
 
   if(get_ts_element_by_name(name_aux) == NULL) {
     add_ts_element(name_aux, type, value);
@@ -962,14 +939,59 @@ int add_symbol_table(char *name, char* type, char *value) {
   }
 }
 
-char *replace_space_with_underscore(char * string) {
+char *replace_dot_with_underscore(char * string) {
   int x = 0;
   for(x; x < strlen(string); x++) {
-    if(string[x] == ' ' || string[x] == '-'){
+    if(string[x] == '.'){
       string[x] = '_';
     }
   } 
   return string;
+}
+
+void create_assembler_header() {
+  FILE *assembler_file;
+  char value[32];
+  //Abre el archivo de assembler
+  if((assembler_file = fopen(ASSEMBLER_FILE, "wt")) == NULL) {
+    printf("\n\nError al abrir el archivo de assembler %s\n", ASSEMBLER_FILE);
+    exit(1);
+  }
+  fprintf(assembler_file, "include macros2.asm\n");
+  fprintf(assembler_file, "include number.asm\n\n");
+  fprintf(assembler_file, ".MODEL \tLARGE\n");
+  fprintf(assembler_file, ".386\n");
+  fprintf(assembler_file, ".STACK \t200h\n\n");
+  fprintf(assembler_file, ".DATA\n\n");
+  fprintf(assembler_file, "\tSTRINGMAXLENGTH \tequ %d\n", STRING_MAX_LENGTH);
+  fprintf(assembler_file, "\t@NEWLINE \tdb 0Dh,0Ah,'$'\n\n");
+  struct_ts *p = ts;
+
+  while(p) {
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "real") == 0 || strcmp(p->type, "string") == 0) {
+      strcpy(value, "?");
+    } else {
+      strcpy(value, p->value);
+    }
+    if(strcmp(p->type, "integer") == 0 || strcmp(p->type, "INT_CTE") == 0
+      || strcmp(p->type, "real") == 0 || strcmp(p->type, "REAL_CTE") == 0) {
+      if(strcmp(value,"?") == 0) {
+        fprintf(assembler_file, "\t%s \tdd %s\n", p->name, value);
+      } else {
+        fprintf(assembler_file, "\t%s \tdd %f\n", p->name, atof(value));
+      }
+    } else {
+      if(strcmp(value,"?") == 0) {
+        fprintf(assembler_file, "\t%s \tdb STRINGMAXLENGTH dup(?),'$'\n", p->name);
+      } else {
+        fprintf(assembler_file, "\t%s \tdb \"%s\",'$',%d dup(?)\n", p->name, value, (STRING_MAX_LENGTH - p->length));
+      }
+    }
+    p = p->next;
+  }
+
+  fprintf(assembler_file, "\n");
+  fclose(assembler_file);
 }
 
 void create_assembler_sentences() {
@@ -983,79 +1005,41 @@ void create_assembler_sentences() {
   }
 
   fprintf(assembler_file, ".CODE\n");
-  fprintf(assembler_file, ".startup\n");
-  fprintf(assembler_file, "mov ax, @data\n");
-  fprintf(assembler_file, "mov ds,ax\n\n");
+  fprintf(assembler_file, "MAIN:\n");
+  fprintf(assembler_file, "\tMOV \tAX, @DATA\n");
+  fprintf(assembler_file, "\tMOV \tDS,AX\n");
+  fprintf(assembler_file, "\tMOV \tES,AX\n\n");
   while(p) {
     recognize_element(assembler_file, p->element);
     p = p->next;
   }
 
-  fprintf(assembler_file, "mov ax, 4C00h\n");
-  fprintf(assembler_file, "int 21h\n\n");
-  fprintf(assembler_file, "END");
+  fprintf(assembler_file, "\tMOV \tAX, 4C00h\n");
+  fprintf(assembler_file, "\tINT \t21h\n\n");
+  fprintf(assembler_file, "END MAIN");
   fclose(assembler_file);
 }
 
 void recognize_element(FILE *file, char *element) {
   if(strcmp(element, "+") == 0) {
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "fld %s\n", aux2->element);
-    fprintf(file, "fld %s\n", aux1->element);
-    fprintf(file, "fadd %s\n", aux1->element);
-    fprintf(file, "@aux dq ?\n");
-    fprintf(file, "fstp @aux\n");
-    fprintf(file, "ffree st(0)\n");
-    free(aux1);
-    free(aux2);
-    push_polish_stack("@aux");
+    operation_asm(file, "fadd");
   } else if(strcmp(element, "-") == 0) {
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "fld %s\n", aux2->element);
-    fprintf(file, "fld %s\n", aux1->element);
-    fprintf(file, "fsub %s\n", aux1->element);
-    fprintf(file, "@aux dq ?\n");
-    fprintf(file, "fstp @aux\n");
-    fprintf(file, "ffree st(0)\n");
-    free(aux1);
-    free(aux2);
-    push_polish_stack("@aux");
+    operation_asm(file, "fsub");
   } else if(strcmp(element, "*") == 0) {
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "fld %s\n", aux2->element);
-    fprintf(file, "fld %s\n", aux1->element);
-    fprintf(file, "fmul %s\n", aux1->element);
-    fprintf(file, "@aux dq ?\n");
-    fprintf(file, "fstp @aux\n");
-    fprintf(file, "ffree st(0)\n");
-    free(aux1);
-    free(aux2);
-    push_polish_stack("@aux");
+    operation_asm(file, "fmul");
   } else if(strcmp(element, "/") == 0) {
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "fld %s\n", aux2->element);
-    fprintf(file, "fld %s\n", aux1->element);
-    fprintf(file, "fdiv %s\n", aux1->element);
-    fprintf(file, "@aux dq ?\n");
-    fprintf(file, "fstp @aux\n");
-    fprintf(file, "ffree st(0)\n");
-    free(aux1);
-    free(aux2);
-    push_polish_stack("@aux");
+    operation_asm(file, "fdiv");
   } else if(strcmp(element, ":=") == 0) {
     struct_polish *aux1 = pop_polish_stack();
     struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "fld %s\n", aux2->element);
-    fprintf(file, "fstp %s\n", aux1->element);
-    fprintf(file, "ffree st(0)\n");
+    fprintf(file, "\tfld \t%s\n", aux2->element);
+    fprintf(file, "\tfstp \t%s\n", aux1->element);
+    fprintf(file, "\tffree \tst(0)\n");
     free(aux1);
     free(aux2);
-    push_polish_stack("@aux");
   } else if(strcmp(element, "WRITE") == 0) {
+    write_asm(file);
+  } else if(strcmp(element, "READ") == 0) {
     struct_polish *aux = pop_polish_stack();
   } else {
     push_polish_stack(element);
@@ -1078,3 +1062,54 @@ struct_polish *pop_polish_stack() {
   polish_stack = polish_stack->next ;
   return p; 
 }
+
+void operation_asm(FILE *file, char *operator) {
+  struct_polish *aux1 = pop_polish_stack();
+  struct_polish *aux2 = pop_polish_stack();
+  fprintf(file, "\tfld \t%s\n", aux2->element);
+  fprintf(file, "\t%s \t%s\n", operator, aux1->element);
+  char av[10];
+  crearte_auxiliar_var(av);
+  char *aux_var = strdup(&av[0]); 
+  fprintf(file, "\t%s \tdq ?\n", aux_var);
+  fprintf(file, "\tfstp \t%s\n", aux_var);
+  fprintf(file, "\tffree \tst(0)\n");
+  free(aux1);
+  free(aux2);
+  push_polish_stack(aux_var);
+}
+
+void write_asm(FILE *file) {
+  struct_polish *aux = pop_polish_stack();
+  char *type = get_type_ts_by_name(aux->element);
+  if(strcmp(type,"INT") == 0) {
+    fprintf(file, "\tDisplayFloat \t%s,0\n", aux->element);
+  } else if(strcmp(type,"REAL") == 0) {
+    fprintf(file, "\tDisplayFloat \t%s,6\n", aux->element);
+  } else if(strcmp(type,"REAL") == 0) {
+    fprintf(file, "\tMOV \tDX,OFFSET %s\n", aux->element);
+    fprintf(file, "\tMOV \tah,09\n");
+    fprintf(file, "\tINT \t21h\n");
+  }
+  fprintf(file, "\tMOV \tDX,OFFSET @NEWLINE\n");
+  fprintf(file, "\tMOV \tah,09\n");
+  fprintf(file, "\tINT \t21h\n");
+}
+
+void crearte_auxiliar_var(char * av) {
+  char aux[10] = "@aux", aux_number[6];
+  aux_var_counter++;
+  sprintf(aux_number, "%d", aux_var_counter);
+  strcat(aux, aux_number);
+  strcpy(av, aux);
+}
+
+char *get_type_ts_by_name(char *element) {
+  struct_ts *ts_element = get_ts_element_by_name(element);
+  if(strcmp(ts_element->type, "integer") == 0 || strcmp(ts_element->type, "INT_CTE") == 0) return "INT";
+  if(strcmp(ts_element->type, "real") == 0 || strcmp(ts_element->type, "REAL_CTE") == 0) return "REAL";
+  if(strcmp(ts_element->type, "string") == 0 || strcmp(ts_element->type, "STRING_CTE") == 0) return "STRING";
+  return ;
+}
+
+//http://www2.dsu.nodak.edu/users/mberg/assembly/numbers/Numbers.html

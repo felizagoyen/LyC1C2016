@@ -66,11 +66,11 @@ COMMENT             -\/.*\/-
 "-"                 { yylval.str_value=strdup(yytext); LOG_MSG("SUBSTRACTION_OPERATOR"); return SUBSTRACTION_OPERATOR; }
 "*"                 { yylval.str_value=strdup(yytext); LOG_MSG("MULTIPLICATION_OPERATOR"); return MULTIPLICATION_OPERATOR; }
 "/"                 { yylval.str_value=strdup(yytext); LOG_MSG("DIVISION_OPERATOR"); return DIVISION_OPERATOR; }
+">="                { LOG_MSG("GREATER_EQUALS_OPERATOR"); return GREATER_EQUALS_OPERATOR; }
+"<="                { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
 ">"                 { LOG_MSG("GREATER_THAN_OPERATOR"); return GREATER_THAN_OPERATOR; }
 "<"                 { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_THAN_OPERATOR; }
 "=="                { LOG_MSG("EQUALS_OPERATOR"); return EQUALS_OPERATOR; }
-">="                { LOG_MSG("GREATER_EQUALS_OPERATOR"); return GREATER_EQUALS_OPERATOR; }
-"<="                { LOG_MSG("SMALLER_THAN_OPERATOR"); return SMALLER_EQUALS_OPERATOR; }
 "&&"                { LOG_MSG("AND_OPERATOR"); return AND_OPERATOR; }
 "||"                { LOG_MSG("OR_OPERATOR"); return OR_OPERATOR; }
 "!="                { LOG_MSG("NOT_EQUALS_OPERATOR"); return NOT_EQUALS_OPERATOR; }
