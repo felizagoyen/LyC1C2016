@@ -36,6 +36,12 @@ typedef struct Polish {
   char *element;
 } struct_polish;
 
+typedef struct Branch {
+  struct Branch *next;
+  char *element;
+  char *label;
+} struct_branch;
+
 typedef struct Stack {
   struct_polish *element;
   struct Stack *previous; 
@@ -53,6 +59,8 @@ struct_polish *polish = NULL;
 struct_polish *last_element_polish = NULL;
 struct_stack *top_element_stack = NULL;
 struct_polish *polish_stack = NULL;
+struct_branch *condition_element = NULL;
+struct_branch *last_condition_element = NULL;
 
 char var_name[100][32];
 char var_type[100][10];
@@ -68,9 +76,9 @@ int iguales_index = 0;
 int aux_var_counter = 0;
 int string_counter = 1;
 int conditional_counter = 0;
-int false_conditional_counter = 0;
-int conditional_anidation_counter = -1;
+int branch_conditional_counter = 0;
 int polish_element_evaluated_counter = 1;
+int is_else_if = 0;
 
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
@@ -102,7 +110,7 @@ void operation_asm(FILE *, char *);
 void write_asm(FILE *);
 void conditional_branch_asm(FILE *, char *);
 void crearte_auxiliar_var(char *);
-void add_end_conditional_label(FILE *);
+void add_conditional_label(FILE *);
 
 %}
 %union {
@@ -454,7 +462,8 @@ comparation:
     | all_equal
         {
           LOG_MSG("\nRegla 19. comparation -> all_equal");
-          insert_polish("1");
+          add_symbol_table("1", "INT_CTE", "1");
+          insert_polish("_int_1");
           create_block_condition("BNE");
           all_equals_pivote_index = 1;
         }
@@ -462,7 +471,8 @@ comparation:
 all_equal:
       ALL_EQUAL
         {
-          insert_polish("0");
+          add_symbol_table("0", "INT_CTE", "0");
+          insert_polish("_int_0");
           insert_polish("_allEqualsResults");
           insert_polish(":=");
           add_symbol_table("_allEqualsResults", "integer", NULL);
@@ -477,7 +487,8 @@ all_equal:
             sprintf(aux, "%d", (polish_index + 3));
             p->element = strdup(&aux[0]);
           }
-          insert_polish("1");
+          add_symbol_table("1", "INT_CTE", "1");
+          insert_polish("_int_1");
           insert_polish("_allEqualsResults");
           insert_polish(":=");
           insert_polish("_allEqualsResults");
@@ -530,10 +541,12 @@ iguales:
             iguales_index++;
             sprintf(aux, "%d", iguales_index);
             strcat(counter_name, aux);
-            insert_polish("0");
+            insert_polish("_int_0");
             insert_polish(strdup(&counter_name[0]));
             insert_polish(":=");  
             add_symbol_table(&counter_name[0], "integer", NULL);
+            add_symbol_table("0", "INT_CTE", "0");
+            add_symbol_table("1", "INT_CTE", "1");
           }
       OPEN_PARENTHESIS expression
           {
@@ -777,9 +790,9 @@ void create_equals_condition() {
   sprintf(aux, "%d", (polish_index + 7));
   insert_polish(strdup(&aux[0]));
   insert_polish("BNE");
-  insert_polish("1");
-  insert_polish("+");
+  insert_polish("_int_1");
   insert_polish(strdup(&counter_name[0]));
+  insert_polish("+");
   insert_polish(strdup(&counter_name[0]));
   insert_polish(":=");
 }
@@ -1021,7 +1034,7 @@ void create_assembler_sentences() {
     p = p->next;
   }
 
-  add_end_conditional_label(assembler_file);
+  add_conditional_label(assembler_file);
 
   fprintf(assembler_file, "\n\tMOV \tAX, 4C00h\n");
   fprintf(assembler_file, "\tINT \t21h\n\n");
@@ -1030,22 +1043,22 @@ void create_assembler_sentences() {
 }
 
 void recognize_element(FILE *file, char *element) {
-  add_end_conditional_label(file);
+  add_conditional_label(file);
 
   if(strcmp(element, "+") == 0) {
-    operation_asm(file, "fadd");
+    operation_asm(file, "FADD");
   } else if(strcmp(element, "-") == 0) {
-    operation_asm(file, "fsub");
+    operation_asm(file, "FSUB");
   } else if(strcmp(element, "*") == 0) {
-    operation_asm(file, "fmul");
+    operation_asm(file, "FMUL");
   } else if(strcmp(element, "/") == 0) {
-    operation_asm(file, "fdiv");
+    operation_asm(file, "FDIV");
   } else if(strcmp(element, ":=") == 0) {
     struct_polish *aux1 = pop_polish_stack();
     struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "\tfld \t%s\n", aux2->element);
-    fprintf(file, "\tfstp \t%s\n", aux1->element);
-    fprintf(file, "\tffree \tst(0)\n");
+    fprintf(file, "\tFLD \t%s\n", aux2->element);
+    fprintf(file, "\tFSTP \t%s\n", aux1->element);
+    fprintf(file, "\tFFREE \tst(0)\n");
     free(aux1);
     free(aux2);
   } else if(strcmp(element, "WRITE") == 0) {
@@ -1054,7 +1067,7 @@ void recognize_element(FILE *file, char *element) {
     struct_polish *aux = pop_polish_stack();
   } else if(strcmp(element, "CMP") == 0) {
     conditional_counter++;
-    fprintf(file,"\nconditional%d:\n\n", conditional_counter);
+    fprintf(file,"\nstart_conditional%d:\n\n", conditional_counter);
     struct_polish *aux1 = pop_polish_stack();
     struct_polish *aux2 = pop_polish_stack();
     fprintf(file,"\tFLD \t%s\n", aux2->element);
@@ -1067,17 +1080,28 @@ void recognize_element(FILE *file, char *element) {
   } else if(strcmp(element, "BNE") == 0) {
     conditional_branch_asm(file, "JNE");
   } else if(strcmp(element, "BGT") == 0) {
+    conditional_branch_asm(file, "JB");
   } else if(strcmp(element, "BGE") == 0) {
+    conditional_branch_asm(file, "JBE");
   } else if(strcmp(element, "BLT") == 0) {
+    conditional_branch_asm(file, "JA");
   } else if(strcmp(element, "BLE") == 0) {
+    conditional_branch_asm(file, "JAE");
   } else if(strcmp(element, "BI") == 0) {
     struct_polish *aux = pop_polish_stack();
     if(atoi(aux->element) > polish_element_evaluated_counter) {
-      fprintf(file,"\tJMP \tend_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
-      fprintf(file,"\nfalse_conditional%d:\n\n", (false_conditional_counter - conditional_anidation_counter));
-      push_stack(aux);
+      char label[40];
+      branch_conditional_counter++;
+      sprintf(label,"conditional_branch%d", branch_conditional_counter);
+      fprintf(file,"\n\tJMP \t%s\n", label);
+      struct_branch *p = malloc(sizeof(struct_branch));
+      p->element = aux->element;
+      p->label = strdup(&label[0]);
+      p->next = NULL;
+      last_condition_element->next = p;    
+      last_condition_element = p;
     } else {
-      fprintf(file,"\tJMP \tfalse_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
+      fprintf(file,"\tJMP \tstart_conditional%d\n", branch_conditional_counter);
     }
   } else {
     push_polish_stack(element);
@@ -1104,14 +1128,14 @@ struct_polish *pop_polish_stack() {
 void operation_asm(FILE *file, char *operator) {
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
-  fprintf(file, "\tfld \t%s\n", aux2->element);
+  fprintf(file, "\tFLD \t%s\n", aux2->element);
   fprintf(file, "\t%s \t%s\n", operator, aux1->element);
   char av[10];
   crearte_auxiliar_var(av);
   char *aux_var = strdup(&av[0]); 
   fprintf(file, "\t%s \tdq ?\n", aux_var);
-  fprintf(file, "\tfstp \t%s\n", aux_var);
-  fprintf(file, "\tffree \tst(0)\n");
+  fprintf(file, "\tFSTP \t%s\n", aux_var);
+  fprintf(file, "\tFFREE \tst(0)\n");
   free(aux1);
   free(aux2);
   push_polish_stack(aux_var);
@@ -1135,11 +1159,21 @@ void write_asm(FILE *file) {
 }
 
 void conditional_branch_asm(FILE *file, char *jump_type) {
-    false_conditional_counter++;
-    conditional_anidation_counter++;
-    char label[20];
-    sprintf(label,"false_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
-    fprintf(file,"\t%s \t%s\n" , jump_type, label);
+    branch_conditional_counter++;
+    char label[40];
+    sprintf(label,"conditional_branch%d", branch_conditional_counter);
+    fprintf(file,"\t%s \t%s\n\n", jump_type, label);
+
+    struct_polish *aux = pop_polish_stack();
+    struct_branch *p = malloc(sizeof(struct_branch));
+    p->element = aux->element;
+    p->label = strdup(&label[0]);
+    if(condition_element) {
+      last_condition_element->next = p;    
+    } else {
+      condition_element = p;
+    }
+    last_condition_element = p;
 }
 
 void crearte_auxiliar_var(char * av) {
@@ -1158,12 +1192,14 @@ char *get_type_ts_by_name(char *element) {
   return ;
 }
 
-void add_end_conditional_label(FILE *file) {
-  if(top_element_stack != NULL 
-    && atoi(top_element_stack->element->element) == polish_element_evaluated_counter) {
-      pop_stack();
-      fprintf(file,"\nend_conditional%d:\n\n", (false_conditional_counter - conditional_anidation_counter));
-      conditional_anidation_counter--;
+void add_conditional_label(FILE *file) {
+  struct_branch *p = condition_element;
+  while(p) {
+    printf("%s --- %s\n",p->element, p->label);
+    if(atoi(p->element) == polish_element_evaluated_counter) {
+      fprintf(file,"\n%s:\n\n", p->label);
+    }
+    p = p->next;
   } 
 }
 
