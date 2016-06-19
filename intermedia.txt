@@ -1,14 +1,13 @@
 Posicion  |   Elemento
 --------------------------
 1         |  _int_1
-2         |  a
-3         |  :=
-4         |  _real_5_9
-5         |  b
-6         |  :=
-7         |  _str_1
-8         |  WRITE
-9         |  a
-10        |  WRITE
-11        |  b
-12        |  WRITE
+2         |  _int_1
+3         |  CMP
+4         |  10
+5         |  BNE
+6         |  _str_1
+7         |  WRITE
+8         |  12
+9         |  BI
+10        |  _str_2
+11        |  WRITE

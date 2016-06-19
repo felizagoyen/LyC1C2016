@@ -67,6 +67,10 @@ int if_not = 0;
 int iguales_index = 0;
 int aux_var_counter = 0;
 int string_counter = 1;
+int conditional_counter = 0;
+int false_conditional_counter = 0;
+int conditional_anidation_counter = -1;
+int polish_element_evaluated_counter = 1;
 
 void validate_var_type(char *, char *);
 int valid_type(char *, char *);
@@ -96,7 +100,9 @@ struct_polish *pop_polish_stack();
 void push_polish_stack(char *);
 void operation_asm(FILE *, char *);
 void write_asm(FILE *);
+void conditional_branch_asm(FILE *, char *);
 void crearte_auxiliar_var(char *);
+void add_end_conditional_label(FILE *);
 
 %}
 %union {
@@ -1011,16 +1017,21 @@ void create_assembler_sentences() {
   fprintf(assembler_file, "\tMOV \tES,AX\n\n");
   while(p) {
     recognize_element(assembler_file, p->element);
+    polish_element_evaluated_counter++;
     p = p->next;
   }
 
-  fprintf(assembler_file, "\tMOV \tAX, 4C00h\n");
+  add_end_conditional_label(assembler_file);
+
+  fprintf(assembler_file, "\n\tMOV \tAX, 4C00h\n");
   fprintf(assembler_file, "\tINT \t21h\n\n");
   fprintf(assembler_file, "END MAIN");
   fclose(assembler_file);
 }
 
 void recognize_element(FILE *file, char *element) {
+  add_end_conditional_label(file);
+
   if(strcmp(element, "+") == 0) {
     operation_asm(file, "fadd");
   } else if(strcmp(element, "-") == 0) {
@@ -1041,6 +1052,33 @@ void recognize_element(FILE *file, char *element) {
     write_asm(file);
   } else if(strcmp(element, "READ") == 0) {
     struct_polish *aux = pop_polish_stack();
+  } else if(strcmp(element, "CMP") == 0) {
+    conditional_counter++;
+    fprintf(file,"\nconditional%d:\n\n", conditional_counter);
+    struct_polish *aux1 = pop_polish_stack();
+    struct_polish *aux2 = pop_polish_stack();
+    fprintf(file,"\tFLD \t%s\n", aux2->element);
+    fprintf(file,"\tFLD \t%s\n", aux1->element);
+    fprintf(file,"\tFCOMP\n");
+    fprintf(file,"\tFSTSW \tax\n");
+    fprintf(file,"\tSAHF\n");
+  } else if(strcmp(element, "BEQ") == 0) {
+    conditional_branch_asm(file, "JE");
+  } else if(strcmp(element, "BNE") == 0) {
+    conditional_branch_asm(file, "JNE");
+  } else if(strcmp(element, "BGT") == 0) {
+  } else if(strcmp(element, "BGE") == 0) {
+  } else if(strcmp(element, "BLT") == 0) {
+  } else if(strcmp(element, "BLE") == 0) {
+  } else if(strcmp(element, "BI") == 0) {
+    struct_polish *aux = pop_polish_stack();
+    if(atoi(aux->element) > polish_element_evaluated_counter) {
+      fprintf(file,"\tJMP \tend_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
+      fprintf(file,"\nfalse_conditional%d:\n\n", (false_conditional_counter - conditional_anidation_counter));
+      push_stack(aux);
+    } else {
+      fprintf(file,"\tJMP \tfalse_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
+    }
   } else {
     push_polish_stack(element);
   }
@@ -1096,6 +1134,14 @@ void write_asm(FILE *file) {
   fprintf(file, "\tINT \t21h\n");
 }
 
+void conditional_branch_asm(FILE *file, char *jump_type) {
+    false_conditional_counter++;
+    conditional_anidation_counter++;
+    char label[20];
+    sprintf(label,"false_conditional%d\n", (false_conditional_counter - conditional_anidation_counter));
+    fprintf(file,"\t%s \t%s\n" , jump_type, label);
+}
+
 void crearte_auxiliar_var(char * av) {
   char aux[10] = "@aux", aux_number[6];
   aux_var_counter++;
@@ -1112,4 +1158,14 @@ char *get_type_ts_by_name(char *element) {
   return ;
 }
 
+void add_end_conditional_label(FILE *file) {
+  if(top_element_stack != NULL 
+    && atoi(top_element_stack->element->element) == polish_element_evaluated_counter) {
+      pop_stack();
+      fprintf(file,"\nend_conditional%d:\n\n", (false_conditional_counter - conditional_anidation_counter));
+      conditional_anidation_counter--;
+  } 
+}
+
 //http://www2.dsu.nodak.edu/users/mberg/assembly/numbers/Numbers.html
+//http://moisesrbb.tripod.com/unidad5.htm#u512

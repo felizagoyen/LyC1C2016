@@ -14,8 +14,8 @@ include number.asm
 	b 	dd ?
 	c 	db STRINGMAXLENGTH dup(?),'$'
 	_int_1 	dd 1.000000
-	_real_5_9 	dd 5.900000
 	_str_1 	db "Hola",'$',27 dup(?)
+	_str_2 	db "CHAU",'$',27 dup(?)
 
 .CODE
 MAIN:
@@ -23,26 +23,36 @@ MAIN:
 	MOV 	DS,AX
 	MOV 	ES,AX
 
-	fld 	_int_1
-	fstp 	a
-	ffree 	st(0)
-	fld 	_real_5_9
-	fstp 	b
-	ffree 	st(0)
+
+conditional1:
+
+	FLD 	_int_1
+	FLD 	_int_1
+	FCOMP
+	FSTSW 	ax
+	SAHF
+	JNE 	false_conditional1
+
 	MOV 	DX,OFFSET _str_1
 	MOV 	ah,09
 	INT 	21h
 	MOV 	DX,OFFSET @NEWLINE
 	MOV 	ah,09
 	INT 	21h
-	DisplayFloat 	a,0
+	JMP 	end_conditional1
+
+false_conditional1:
+
+	MOV 	DX,OFFSET _str_2
+	MOV 	ah,09
+	INT 	21h
 	MOV 	DX,OFFSET @NEWLINE
 	MOV 	ah,09
 	INT 	21h
-	DisplayFloat 	b,2
-	MOV 	DX,OFFSET @NEWLINE
-	MOV 	ah,09
-	INT 	21h
+
+end_conditional1:
+
+
 	MOV 	AX, 4C00h
 	INT 	21h
 

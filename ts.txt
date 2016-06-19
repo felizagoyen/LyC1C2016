@@ -4,5 +4,5 @@ a                                          |  integer        |                  
 b                                          |  real           |                                   |  0
 c                                          |  string         |                                   |  0
 _int_1                                     |  INT_CTE        |  1                                |  0
-_real_5_9                                  |  REAL_CTE       |  5.9                              |  0
 _str_1                                     |  STRING_CTE     |  Hola                             |  4
+_str_2                                     |  STRING_CTE     |  CHAU                             |  4
