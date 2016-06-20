@@ -7,14 +7,17 @@ include number.asm
 
 .DATA
 
-	STRINGMAXLENGTH 	equ 31
+	STRINGMAXLENGTH 	equ 30
+	@read_string 	db 0Dh,0Ah,'$'
+	@concat_string 	db STRINGMAXLENGTH dup(?),'$'
 	@NEWLINE 	db 0Dh,0Ah,'$'
 
 	a 	dd ?
 	b 	dd ?
 	c 	db STRINGMAXLENGTH dup(?),'$'
-	_int_1 	dd 1.000000
-	_str_1 	db "Bien",'$',27 dup(?)
+	_str_1 	db "holaholaholahoolahola",'$',9 dup(?)
+	_str_2 	db "13214",'$',25 dup(?)
+	_real_123_234 	dd 123.234000
 
 .CODE
 MAIN:
@@ -22,25 +25,29 @@ MAIN:
 	MOV 	DS,AX
 	MOV 	ES,AX
 
-
-start_conditional1:
-
-	FLD 	_int_1
-	FLD 	_int_1
-	FCOMP
-	FSTSW 	ax
-	SAHF
-	JE 	conditional_branch1
-
-	MOV 	DX,OFFSET _str_1
-	MOV 	ah,09
+	MOV SI, OFFSET _str_1
+	MOV DI, OFFSET @concat_string
+	STRCPY
+	MOV SI, OFFSET _str_2
+	MOV DI, OFFSET @concat_string
+	STRCAT
+	MOV 	DX, OFFSET @concat_string
+	MOV 	ah, 09
 	INT 	21h
-	MOV 	DX,OFFSET @NEWLINE
-	MOV 	ah,09
+	MOV 	DX, OFFSET @NEWLINE
+	MOV 	ah, 09
 	INT 	21h
-
-conditional_branch1:
-
+	FLD 	a
+	FADD 	_real_123_234
+	@aux1 	dq ?
+	FSTP 	@aux1
+	FLD 	@aux1
+	FSTP 	a
+	FFREE 	st(0)
+	DisplayFloat 	a, 0
+	MOV 	DX, OFFSET @NEWLINE
+	MOV 	ah, 09
+	INT 	21h
 
 	MOV 	AX, 4C00h
 	INT 	21h

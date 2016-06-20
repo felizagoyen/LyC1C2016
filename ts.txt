@@ -3,5 +3,6 @@
 a                                          |  integer        |                                   |  0
 b                                          |  real           |                                   |  0
 c                                          |  string         |                                   |  0
-_int_1                                     |  INT_CTE        |  1                                |  0
-_str_1                                     |  STRING_CTE     |  Bien                             |  4
+_str_1                                     |  STRING_CTE     |  holaholaholahoolahola            |  21
+_str_2                                     |  STRING_CTE     |  13214                            |  5
+_real_123_234                              |  REAL_CTE       |  123.234                          |  0

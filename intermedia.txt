@@ -1,9 +1,13 @@
 Posicion  |   Elemento
 --------------------------
-1         |  _int_1
-2         |  _int_1
-3         |  CMP
-4         |  8
-5         |  BEQ
-6         |  _str_1
-7         |  WRITE
+1         |  _str_1
+2         |  _str_2
+3         |  ++
+4         |  WRITE
+5         |  a
+6         |  _real_123_234
+7         |  +
+8         |  a
+9         |  :=
+10        |  a
+11        |  WRITE

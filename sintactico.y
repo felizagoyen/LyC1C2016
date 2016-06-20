@@ -15,7 +15,7 @@
 #define CODE_FILE "intermedia.txt"
 #define ASSEMBLER_FILE "Final.asm"
 #define LOGGER 1
-#define STRING_MAX_LENGTH 31
+#define STRING_MAX_LENGTH 30
 
 #if LOGGER
   #define LOG_MSG printf
@@ -111,6 +111,12 @@ void write_asm(FILE *);
 void conditional_branch_asm(FILE *, char *);
 void crearte_auxiliar_var(char *);
 void add_conditional_label(FILE *);
+void compare_asm(FILE *);
+void assignment_asm(FILE *);
+void inconditional_branch_if_asm(FILE *, struct_polish *); 
+char *get_conditional_label_by_position(char *);
+void read_asm(FILE *);
+void concatenation_asm(FILE *);
 
 %}
 %union {
@@ -983,6 +989,8 @@ void create_assembler_header() {
   fprintf(assembler_file, ".STACK \t200h\n\n");
   fprintf(assembler_file, ".DATA\n\n");
   fprintf(assembler_file, "\tSTRINGMAXLENGTH \tequ %d\n", STRING_MAX_LENGTH);
+  fprintf(assembler_file, "\t@read_string \tdb 0Dh,0Ah,'$'\n");
+  fprintf(assembler_file, "\t@concat_string \tdb STRINGMAXLENGTH dup(?),'$'\n");
   fprintf(assembler_file, "\t@NEWLINE \tdb 0Dh,0Ah,'$'\n\n");
   struct_ts *p = ts;
 
@@ -1054,27 +1062,15 @@ void recognize_element(FILE *file, char *element) {
   } else if(strcmp(element, "/") == 0) {
     operation_asm(file, "FDIV");
   } else if(strcmp(element, ":=") == 0) {
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file, "\tFLD \t%s\n", aux2->element);
-    fprintf(file, "\tFSTP \t%s\n", aux1->element);
-    fprintf(file, "\tFFREE \tst(0)\n");
-    free(aux1);
-    free(aux2);
+    assignment_asm(file);
+  } else if(strcmp(element, "++") == 0) {
+    concatenation_asm(file);
   } else if(strcmp(element, "WRITE") == 0) {
     write_asm(file);
   } else if(strcmp(element, "READ") == 0) {
-    struct_polish *aux = pop_polish_stack();
+    read_asm(file);
   } else if(strcmp(element, "CMP") == 0) {
-    conditional_counter++;
-    fprintf(file,"\nstart_conditional%d:\n\n", conditional_counter);
-    struct_polish *aux1 = pop_polish_stack();
-    struct_polish *aux2 = pop_polish_stack();
-    fprintf(file,"\tFLD \t%s\n", aux2->element);
-    fprintf(file,"\tFLD \t%s\n", aux1->element);
-    fprintf(file,"\tFCOMP\n");
-    fprintf(file,"\tFSTSW \tax\n");
-    fprintf(file,"\tSAHF\n");
+    compare_asm(file);
   } else if(strcmp(element, "BEQ") == 0) {
     conditional_branch_asm(file, "JE");
   } else if(strcmp(element, "BNE") == 0) {
@@ -1090,19 +1086,11 @@ void recognize_element(FILE *file, char *element) {
   } else if(strcmp(element, "BI") == 0) {
     struct_polish *aux = pop_polish_stack();
     if(atoi(aux->element) > polish_element_evaluated_counter) {
-      char label[40];
-      branch_conditional_counter++;
-      sprintf(label,"conditional_branch%d", branch_conditional_counter);
-      fprintf(file,"\n\tJMP \t%s\n", label);
-      struct_branch *p = malloc(sizeof(struct_branch));
-      p->element = aux->element;
-      p->label = strdup(&label[0]);
-      p->next = NULL;
-      last_condition_element->next = p;    
-      last_condition_element = p;
+      inconditional_branch_if_asm(file, aux);
     } else {
       fprintf(file,"\tJMP \tstart_conditional%d\n", branch_conditional_counter);
     }
+    free(aux);
   } else {
     push_polish_stack(element);
   }
@@ -1135,7 +1123,6 @@ void operation_asm(FILE *file, char *operator) {
   char *aux_var = strdup(&av[0]); 
   fprintf(file, "\t%s \tdq ?\n", aux_var);
   fprintf(file, "\tFSTP \t%s\n", aux_var);
-  fprintf(file, "\tFFREE \tst(0)\n");
   free(aux1);
   free(aux2);
   push_polish_stack(aux_var);
@@ -1145,35 +1132,53 @@ void write_asm(FILE *file) {
   struct_polish *aux = pop_polish_stack();
   char *type = get_type_ts_by_name(aux->element);
   if(strcmp(type, "INT") == 0) {
-    fprintf(file, "\tDisplayFloat \t%s,0\n", aux->element);
+    fprintf(file, "\tDisplayFloat \t%s, 0\n", aux->element);
   } else if(strcmp(type, "REAL") == 0) {
-    fprintf(file, "\tDisplayFloat \t%s,2\n", aux->element);
-  } else if(strcmp(type, "STRING") == 0) {
-    fprintf(file, "\tMOV \tDX,OFFSET %s\n", aux->element);
-    fprintf(file, "\tMOV \tah,09\n");
+    fprintf(file, "\tDisplayFloat \t%s, 2\n", aux->element);
+  } else {
+    fprintf(file, "\tMOV \tDX, OFFSET %s\n", aux->element);
+    fprintf(file, "\tMOV \tah, 09\n");
     fprintf(file, "\tINT \t21h\n");
   }
-  fprintf(file, "\tMOV \tDX,OFFSET @NEWLINE\n");
-  fprintf(file, "\tMOV \tah,09\n");
+  fprintf(file, "\tMOV \tDX, OFFSET @NEWLINE\n");
+  fprintf(file, "\tMOV \tah, 09\n");
   fprintf(file, "\tINT \t21h\n");
 }
 
-void conditional_branch_asm(FILE *file, char *jump_type) {
-    branch_conditional_counter++;
-    char label[40];
-    sprintf(label,"conditional_branch%d", branch_conditional_counter);
-    fprintf(file,"\t%s \t%s\n\n", jump_type, label);
+void compare_asm(FILE *file) {
+  conditional_counter++;
+  fprintf(file,"\nstart_conditional%d:\n\n", conditional_counter);
+  struct_polish *aux1 = pop_polish_stack();
+  struct_polish *aux2 = pop_polish_stack();
+  fprintf(file,"\tFLD \t%s\n", aux2->element);
+  fprintf(file,"\tFLD \t%s\n", aux1->element);
+  fprintf(file,"\tFCOMP\n");
+  fprintf(file,"\tFSTSW \tax\n");
+  fprintf(file,"\tSAHF\n");
+}
 
+void conditional_branch_asm(FILE *file, char *jump_type) {
     struct_polish *aux = pop_polish_stack();
-    struct_branch *p = malloc(sizeof(struct_branch));
-    p->element = aux->element;
-    p->label = strdup(&label[0]);
-    if(condition_element) {
-      last_condition_element->next = p;    
+    char *lbl = get_conditional_label_by_position(aux->element);
+
+    if(lbl != NULL) {
+      fprintf(file,"\t%s \t%s\n\n", jump_type, lbl);
     } else {
-      condition_element = p;
+      char label[40];
+      branch_conditional_counter++;
+      sprintf(label,"conditional_branch%d", branch_conditional_counter);
+      fprintf(file,"\t%s \t%s\n\n", jump_type, label);
+
+      struct_branch *p = malloc(sizeof(struct_branch));
+      p->element = aux->element;
+      p->label = strdup(&label[0]);
+      if(condition_element) {
+        last_condition_element->next = p;    
+      } else {
+        condition_element = p;
+      }
+      last_condition_element = p;
     }
-    last_condition_element = p;
 }
 
 void crearte_auxiliar_var(char * av) {
@@ -1186,21 +1191,107 @@ void crearte_auxiliar_var(char * av) {
 
 char *get_type_ts_by_name(char *element) {
   struct_ts *ts_element = get_ts_element_by_name(element);
+  if(ts_element == NULL) return "STRING";
   if(strcmp(ts_element->type, "integer") == 0 || strcmp(ts_element->type, "INT_CTE") == 0) return "INT";
   if(strcmp(ts_element->type, "real") == 0 || strcmp(ts_element->type, "REAL_CTE") == 0) return "REAL";
-  if(strcmp(ts_element->type, "string") == 0 || strcmp(ts_element->type, "STRING_CTE") == 0) return "STRING";
-  return ;
+  return "STRING";
 }
 
 void add_conditional_label(FILE *file) {
   struct_branch *p = condition_element;
   while(p) {
-    printf("%s --- %s\n",p->element, p->label);
     if(atoi(p->element) == polish_element_evaluated_counter) {
       fprintf(file,"\n%s:\n\n", p->label);
     }
     p = p->next;
   } 
+}
+
+char *get_conditional_label_by_position(char * element) {
+  struct_branch *p = condition_element;
+  while(p) {
+    if(strcmp(p->element, element) == 0) {
+      return p->label;
+    }
+    p = p->next;
+  }  
+  return NULL;
+}
+
+void assignment_asm(FILE *file) {
+  struct_polish *aux1 = pop_polish_stack();
+  struct_polish *aux2 = pop_polish_stack();
+  char *type = get_type_ts_by_name(aux1->element);
+
+  if(strcmp(type, "STRING") == 0) {
+    fprintf(file,"\tMOV \tSI,OFFSET %s\n", aux2->element);
+    fprintf(file,"\tMOV \tDI,OFFSET %s\n", aux1->element);
+    fprintf(file,"\tSTRCPY\n");
+  } else {
+    fprintf(file, "\tFLD \t%s\n", aux2->element);
+    fprintf(file, "\tFSTP \t%s\n", aux1->element);
+    fprintf(file, "\tFFREE \tst(0)\n");
+  }
+  
+  free(aux1);
+  free(aux2);
+}
+
+void inconditional_branch_if_asm(FILE *file, struct_polish *aux) {
+  char label[40];
+  struct_branch *p = malloc(sizeof(struct_branch));
+
+  branch_conditional_counter++;
+  sprintf(label,"conditional_branch%d", branch_conditional_counter);
+  fprintf(file,"\n\tJMP \t%s\n", label);
+
+  p->element = aux->element;
+  p->label = strdup(&label[0]);
+  p->next = NULL;
+
+  last_condition_element->next = p;    
+  last_condition_element = p;
+}
+
+void read_asm(FILE *file) {
+  struct_polish *aux = pop_polish_stack();
+  char *type = get_type_ts_by_name(aux->element);
+
+  if(strcmp(type, "INT") == 0) {
+    fprintf(file, "\tGetFloat \t%s\n", aux->element);
+  } else if(strcmp(type, "REAL") == 0) {
+    fprintf(file, "\tGetFloat \t%s\n", aux->element);
+  } else if(strcmp(type, "STRING") == 0) {
+      fprintf(file,"\tMOV byte ptr @read_string, 21\n");
+      fprintf(file,"\tMOV DX, OFFSET @read_string\n");
+      fprintf(file,"\tMOV ah, 0ah\n");
+      fprintf(file,"\tINT 21h\n\n");
+      fprintf(file,"\tMOV SI, 0002\n");
+      fprintf(file,"\tLEA DX, @read_string[SI]\n");
+      fprintf(file,"\tMOV SI, DX\n");
+      fprintf(file,"\tMOV DI,OFFSET %s\n", aux->element);
+      fprintf(file,"\t STRCPY\n\n");
+  }
+
+  fprintf(file, "\tMOV \tDX,OFFSET @NEWLINE\n");
+  fprintf(file, "\tMOV \tah,09\n");
+  fprintf(file, "\tINT \t21h\n");  
+}
+
+void concatenation_asm(FILE *file) {
+  struct_polish *aux1 = pop_polish_stack();
+  struct_polish *aux2 = pop_polish_stack();
+
+  fprintf(file,"\tMOV SI, OFFSET %s\n", aux2->element);
+  fprintf(file,"\tMOV DI, OFFSET @concat_string\n");
+  fprintf(file,"\tSTRCPY\n");
+  fprintf(file,"\tMOV SI, OFFSET %s\n", aux1->element);
+  fprintf(file,"\tMOV DI, OFFSET @concat_string\n");
+  fprintf(file,"\tSTRCAT\n");
+
+  free(aux1);
+  free(aux2);
+  push_polish_stack("@concat_string");
 }
 
 //http://www2.dsu.nodak.edu/users/mberg/assembly/numbers/Numbers.html
