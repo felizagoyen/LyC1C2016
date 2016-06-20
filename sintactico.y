@@ -61,6 +61,8 @@ struct_stack *top_element_stack = NULL;
 struct_polish *polish_stack = NULL;
 struct_branch *condition_element = NULL;
 struct_branch *last_condition_element = NULL;
+struct_polish *asm_sentence = NULL;
+struct_polish *last_asm_sentence = NULL;
 
 char var_name[100][32];
 char var_type[100][10];
@@ -76,6 +78,7 @@ int iguales_index = 0;
 int aux_var_counter = 0;
 int string_counter = 1;
 int conditional_counter = 0;
+int conditional_anidation = 0;
 int branch_conditional_counter = 0;
 int polish_element_evaluated_counter = 1;
 int is_else_if = 0;
@@ -103,20 +106,21 @@ char *get_type_ts_by_name(char *);
 void add_ts_element(char *, char *, char *);
 char *replace_dot_with_underscore(char *);
 void create_assembler_sentences();
-void recognize_element(FILE *, char *);
+void recognize_element(char *);
 struct_polish *pop_polish_stack();
 void push_polish_stack(char *);
-void operation_asm(FILE *, char *);
-void write_asm(FILE *);
-void conditional_branch_asm(FILE *, char *);
-void crearte_auxiliar_var(char *);
-void add_conditional_label(FILE *);
-void compare_asm(FILE *);
-void assignment_asm(FILE *);
-void inconditional_branch_if_asm(FILE *, struct_polish *); 
+void operation_asm(char *);
+void write_asm();
+void conditional_branch_asm(char *);
+void create_auxiliar_var(char *);
+void add_conditional_label();
+void compare_asm();
+void assignment_asm();
+void inconditional_branch_if_asm(struct_polish *); 
 char *get_conditional_label_by_position(char *);
-void read_asm(FILE *);
-void concatenation_asm(FILE *);
+void read_asm();
+void concatenation_asm();
+void insert_asm_sentence(char *);
 
 %}
 %union {
@@ -1037,12 +1041,23 @@ void create_assembler_sentences() {
   fprintf(assembler_file, "\tMOV \tDS,AX\n");
   fprintf(assembler_file, "\tMOV \tES,AX\n\n");
   while(p) {
-    recognize_element(assembler_file, p->element);
+    recognize_element(p->element);
     polish_element_evaluated_counter++;
     p = p->next;
   }
 
-  add_conditional_label(assembler_file);
+  add_conditional_label();
+
+  int x = 1;
+  for(x; x <= aux_var_counter; x++) {
+    fprintf(assembler_file, "\t@aux%d \tdq ?\n", x);
+  }
+
+  p = asm_sentence;
+  while(p) {
+    fprintf(assembler_file, "%s", p->element);
+    p = p->next;
+  }
 
   fprintf(assembler_file, "\n\tMOV \tAX, 4C00h\n");
   fprintf(assembler_file, "\tINT \t21h\n\n");
@@ -1050,45 +1065,47 @@ void create_assembler_sentences() {
   fclose(assembler_file);
 }
 
-void recognize_element(FILE *file, char *element) {
-  add_conditional_label(file);
+void recognize_element(char *element) {
+  add_conditional_label();
 
   if(strcmp(element, "+") == 0) {
-    operation_asm(file, "FADD");
+    operation_asm("FADD");
   } else if(strcmp(element, "-") == 0) {
-    operation_asm(file, "FSUB");
+    operation_asm("FSUB");
   } else if(strcmp(element, "*") == 0) {
-    operation_asm(file, "FMUL");
+    operation_asm("FMUL");
   } else if(strcmp(element, "/") == 0) {
-    operation_asm(file, "FDIV");
+    operation_asm("FDIV");
   } else if(strcmp(element, ":=") == 0) {
-    assignment_asm(file);
+    assignment_asm();
   } else if(strcmp(element, "++") == 0) {
-    concatenation_asm(file);
+    concatenation_asm();
   } else if(strcmp(element, "WRITE") == 0) {
-    write_asm(file);
+    write_asm();
   } else if(strcmp(element, "READ") == 0) {
-    read_asm(file);
+    read_asm();
   } else if(strcmp(element, "CMP") == 0) {
-    compare_asm(file);
+    compare_asm();
   } else if(strcmp(element, "BEQ") == 0) {
-    conditional_branch_asm(file, "JE");
+    conditional_branch_asm("JE");
   } else if(strcmp(element, "BNE") == 0) {
-    conditional_branch_asm(file, "JNE");
+    conditional_branch_asm("JNE");
   } else if(strcmp(element, "BGT") == 0) {
-    conditional_branch_asm(file, "JB");
+    conditional_branch_asm("JB");
   } else if(strcmp(element, "BGE") == 0) {
-    conditional_branch_asm(file, "JBE");
+    conditional_branch_asm("JBE");
   } else if(strcmp(element, "BLT") == 0) {
-    conditional_branch_asm(file, "JA");
+    conditional_branch_asm("JA");
   } else if(strcmp(element, "BLE") == 0) {
-    conditional_branch_asm(file, "JAE");
+    conditional_branch_asm("JAE");
   } else if(strcmp(element, "BI") == 0) {
     struct_polish *aux = pop_polish_stack();
     if(atoi(aux->element) > polish_element_evaluated_counter) {
-      inconditional_branch_if_asm(file, aux);
+      inconditional_branch_if_asm(aux);
     } else {
-      fprintf(file,"\tJMP \tstart_conditional%d\n", branch_conditional_counter);
+      char sentence[100];
+      sprintf(sentence, "\tJMP \tstart_conditional%d\n", conditional_anidation);
+      insert_asm_sentence(strdup(&sentence[0]));
     }
     free(aux);
   } else {
@@ -1113,61 +1130,84 @@ struct_polish *pop_polish_stack() {
   return p; 
 }
 
-void operation_asm(FILE *file, char *operator) {
+void operation_asm(char *operator) {
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
-  fprintf(file, "\tFLD \t%s\n", aux2->element);
-  fprintf(file, "\t%s \t%s\n", operator, aux1->element);
+  char sentence[100];
+
+  sprintf(sentence, "\tFLD \t%s\n", aux2->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  sprintf(sentence, "\tFLD \t%s\n", aux1->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  sprintf(sentence, "\t%s\n", operator);
+  insert_asm_sentence(strdup(&sentence[0]));
   char av[10];
-  crearte_auxiliar_var(av);
+  create_auxiliar_var(av);
   char *aux_var = strdup(&av[0]); 
-  fprintf(file, "\t%s \tdq ?\n", aux_var);
-  fprintf(file, "\tFSTP \t%s\n", aux_var);
+  sprintf(sentence, "\tFSTP \t%s\n", aux_var);
+  insert_asm_sentence(strdup(&sentence[0]));
+  insert_asm_sentence("\tFFREE \tst(0)\n");
   free(aux1);
   free(aux2);
   push_polish_stack(aux_var);
 }
 
-void write_asm(FILE *file) {
+void write_asm() {
   struct_polish *aux = pop_polish_stack();
   char *type = get_type_ts_by_name(aux->element);
+  char sentence[100];
   if(strcmp(type, "INT") == 0) {
-    fprintf(file, "\tDisplayFloat \t%s, 0\n", aux->element);
+    sprintf(sentence, "\tDisplayFloat \t%s, 0\n", aux->element);
+    insert_asm_sentence(strdup(&sentence[0]));
   } else if(strcmp(type, "REAL") == 0) {
-    fprintf(file, "\tDisplayFloat \t%s, 2\n", aux->element);
+    sprintf(sentence, "\tDisplayFloat \t%s, 2\n", aux->element);
+    insert_asm_sentence(strdup(&sentence[0]));
   } else {
-    fprintf(file, "\tMOV \tDX, OFFSET %s\n", aux->element);
-    fprintf(file, "\tMOV \tah, 09\n");
-    fprintf(file, "\tINT \t21h\n");
+    sprintf(sentence, "\tMOV \tDX, OFFSET %s\n", aux->element);
+    insert_asm_sentence(strdup(&sentence[0]));
+    insert_asm_sentence("\tMOV \tah, 09\n");
+    insert_asm_sentence("\tINT \t21h\n");
   }
-  fprintf(file, "\tMOV \tDX, OFFSET @NEWLINE\n");
-  fprintf(file, "\tMOV \tah, 09\n");
-  fprintf(file, "\tINT \t21h\n");
+  insert_asm_sentence("\tMOV \tDX, OFFSET @NEWLINE\n");
+  insert_asm_sentence("\tMOV \tah, 09\n");
+  insert_asm_sentence("\tINT \t21h\n");
 }
 
-void compare_asm(FILE *file) {
-  conditional_counter++;
-  fprintf(file,"\nstart_conditional%d:\n\n", conditional_counter);
+void compare_asm() {
+  char sentence[100];
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
-  fprintf(file,"\tFLD \t%s\n", aux2->element);
-  fprintf(file,"\tFLD \t%s\n", aux1->element);
-  fprintf(file,"\tFCOMP\n");
-  fprintf(file,"\tFSTSW \tax\n");
-  fprintf(file,"\tSAHF\n");
+
+  conditional_counter++;
+  conditional_anidation = conditional_counter;
+
+  sprintf(sentence,"\nstart_conditional%d:\n\n", conditional_counter);
+  insert_asm_sentence(strdup(&sentence[0]));
+
+  sprintf(sentence,"\tFLD \t%s\n", aux2->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  sprintf(sentence,"\tFLD \t%s\n", aux1->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  
+  insert_asm_sentence("\tFCOMP\n");
+  insert_asm_sentence("\tFSTSW \tax\n");
+  insert_asm_sentence("\tSAHF\n");
 }
 
-void conditional_branch_asm(FILE *file, char *jump_type) {
+void conditional_branch_asm(char *jump_type) {
+    char sentence[100];
     struct_polish *aux = pop_polish_stack();
     char *lbl = get_conditional_label_by_position(aux->element);
 
     if(lbl != NULL) {
-      fprintf(file,"\t%s \t%s\n\n", jump_type, lbl);
+      sprintf(sentence,"\t%s \t%s\n\n", jump_type, lbl);
+      insert_asm_sentence(strdup(&sentence[0]));
     } else {
       char label[40];
       branch_conditional_counter++;
       sprintf(label,"conditional_branch%d", branch_conditional_counter);
-      fprintf(file,"\t%s \t%s\n\n", jump_type, label);
+      sprintf(sentence,"\t%s \t%s\n\n", jump_type, label);
+      insert_asm_sentence(strdup(&sentence[0]));
 
       struct_branch *p = malloc(sizeof(struct_branch));
       p->element = aux->element;
@@ -1181,7 +1221,7 @@ void conditional_branch_asm(FILE *file, char *jump_type) {
     }
 }
 
-void crearte_auxiliar_var(char * av) {
+void create_auxiliar_var(char * av) {
   char aux[10] = "@aux", aux_number[6];
   aux_var_counter++;
   sprintf(aux_number, "%d", aux_var_counter);
@@ -1197,11 +1237,14 @@ char *get_type_ts_by_name(char *element) {
   return "STRING";
 }
 
-void add_conditional_label(FILE *file) {
+void add_conditional_label() {
   struct_branch *p = condition_element;
   while(p) {
     if(atoi(p->element) == polish_element_evaluated_counter) {
-      fprintf(file,"\n%s:\n\n", p->label);
+      char sentence[100];
+      sprintf(sentence, "\n%s:\n\n", p->label);
+      insert_asm_sentence(strdup(&sentence[0]));
+      conditional_anidation--;
     }
     p = p->next;
   } 
@@ -1218,32 +1261,39 @@ char *get_conditional_label_by_position(char * element) {
   return NULL;
 }
 
-void assignment_asm(FILE *file) {
+void assignment_asm() {
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
   char *type = get_type_ts_by_name(aux1->element);
+  char sentence[100];
 
   if(strcmp(type, "STRING") == 0) {
-    fprintf(file,"\tMOV \tSI,OFFSET %s\n", aux2->element);
-    fprintf(file,"\tMOV \tDI,OFFSET %s\n", aux1->element);
-    fprintf(file,"\tSTRCPY\n");
+    sprintf(sentence,"\tMOV \tSI,OFFSET %s\n", aux2->element);
+    insert_asm_sentence(strdup(&sentence[0]));
+    sprintf(sentence,"\tMOV \tDI,OFFSET %s\n", aux1->element);
+    insert_asm_sentence(strdup(&sentence[0]));
+    insert_asm_sentence("\tSTRCPY\n");
   } else {
-    fprintf(file, "\tFLD \t%s\n", aux2->element);
-    fprintf(file, "\tFSTP \t%s\n", aux1->element);
-    fprintf(file, "\tFFREE \tst(0)\n");
+    sprintf(sentence, "\tFLD \t%s\n", aux2->element);
+    insert_asm_sentence(strdup(&sentence[0]));
+    sprintf(sentence, "\tFSTP \t%s\n", aux1->element);
+    insert_asm_sentence(strdup(&sentence[0]));
+    insert_asm_sentence("\tFFREE \tst(0)\n");
   }
   
   free(aux1);
   free(aux2);
 }
 
-void inconditional_branch_if_asm(FILE *file, struct_polish *aux) {
+void inconditional_branch_if_asm(struct_polish *aux) {
   char label[40];
   struct_branch *p = malloc(sizeof(struct_branch));
+  char sentence[100];
 
   branch_conditional_counter++;
   sprintf(label,"conditional_branch%d", branch_conditional_counter);
-  fprintf(file,"\n\tJMP \t%s\n", label);
+  sprintf(sentence,"\n\tJMP \t%s\n", label);
+  insert_asm_sentence(strdup(&sentence[0]));
 
   p->element = aux->element;
   p->label = strdup(&label[0]);
@@ -1253,45 +1303,63 @@ void inconditional_branch_if_asm(FILE *file, struct_polish *aux) {
   last_condition_element = p;
 }
 
-void read_asm(FILE *file) {
+void read_asm() {
   struct_polish *aux = pop_polish_stack();
   char *type = get_type_ts_by_name(aux->element);
+  char sentence[100];
 
   if(strcmp(type, "INT") == 0) {
-    fprintf(file, "\tGetFloat \t%s\n", aux->element);
+    sprintf(sentence, "\tGetFloat \t%s\n", aux->element);
+    insert_asm_sentence(strdup(&sentence[0]));
   } else if(strcmp(type, "REAL") == 0) {
-    fprintf(file, "\tGetFloat \t%s\n", aux->element);
+    sprintf(sentence, "\tGetFloat \t%s\n", aux->element);
+    insert_asm_sentence(strdup(&sentence[0]));
   } else if(strcmp(type, "STRING") == 0) {
-      fprintf(file,"\tMOV byte ptr @read_string, 21\n");
-      fprintf(file,"\tMOV DX, OFFSET @read_string\n");
-      fprintf(file,"\tMOV ah, 0ah\n");
-      fprintf(file,"\tINT 21h\n\n");
-      fprintf(file,"\tMOV SI, 0002\n");
-      fprintf(file,"\tLEA DX, @read_string[SI]\n");
-      fprintf(file,"\tMOV SI, DX\n");
-      fprintf(file,"\tMOV DI,OFFSET %s\n", aux->element);
-      fprintf(file,"\t STRCPY\n\n");
+      insert_asm_sentence("\tMOV byte ptr @read_string, 21\n");
+      insert_asm_sentence("\tMOV DX, OFFSET @read_string\n");
+      insert_asm_sentence("\tMOV ah, 0ah\n");
+      insert_asm_sentence("\tINT 21h\n\n");
+      insert_asm_sentence("\tMOV SI, 0002\n");
+      insert_asm_sentence("\tLEA DX, @read_string[SI]\n");
+      insert_asm_sentence("\tMOV SI, DX\n");
+      sprintf(sentence, "\tMOV DI,OFFSET %s\n", aux->element);
+      insert_asm_sentence(strdup(&sentence[0]));
+      insert_asm_sentence("\t STRCPY\n\n");
   }
-
-  fprintf(file, "\tMOV \tDX,OFFSET @NEWLINE\n");
-  fprintf(file, "\tMOV \tah,09\n");
-  fprintf(file, "\tINT \t21h\n");  
 }
 
-void concatenation_asm(FILE *file) {
+void concatenation_asm() {
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
+  char sentence[100];
 
-  fprintf(file,"\tMOV SI, OFFSET %s\n", aux2->element);
-  fprintf(file,"\tMOV DI, OFFSET @concat_string\n");
-  fprintf(file,"\tSTRCPY\n");
-  fprintf(file,"\tMOV SI, OFFSET %s\n", aux1->element);
-  fprintf(file,"\tMOV DI, OFFSET @concat_string\n");
-  fprintf(file,"\tSTRCAT\n");
+  sprintf(sentence, "\tMOV SI, OFFSET %s\n", aux2->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  insert_asm_sentence("\tMOV DI, OFFSET @concat_string\n");
+  insert_asm_sentence("\tSTRCPY\n");
+  sprintf(sentence, "\tMOV SI, OFFSET %s\n", aux1->element);
+  insert_asm_sentence(strdup(&sentence[0]));
+  insert_asm_sentence("\tMOV DI, OFFSET @concat_string\n");
+  insert_asm_sentence("\tSTRCAT\n");
 
   free(aux1);
   free(aux2);
   push_polish_stack("@concat_string");
+}
+
+void insert_asm_sentence(char * element) {
+  struct_polish *p = malloc(sizeof(struct_polish)); 
+  p->element = element;
+  p->next = NULL;
+  
+  if(asm_sentence) {
+    last_asm_sentence->next = p;
+  } else {
+    asm_sentence = p;
+  }
+
+  last_asm_sentence = p;
+  polish_index++;
 }
 
 //http://www2.dsu.nodak.edu/users/mberg/assembly/numbers/Numbers.html
