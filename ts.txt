@@ -1,11 +1,10 @@
              Nombre                        |       Tipo      |                Valor              |  Longitud
 ----------------------------------------------------------------------------------------------------------------
-a                                          |  integer        |                                   |  0
-b                                          |  real           |                                   |  0
-c                                          |  string         |                                   |  0
-_int_5                                     |  INT_CTE        |  5                                |  0
-_int_2                                     |  INT_CTE        |  2                                |  0
-_int_4                                     |  INT_CTE        |  4                                |  0
-_str_1                                     |  STRING_CTE     |  BIEN                             |  4
-_int_1                                     |  INT_CTE        |  1                                |  0
+_var_MUL                                   |  integer        |                                   |  0
+_var_b                                     |  real           |                                   |  0
+_var_c                                     |  string         |                                   |  0
 _int_0                                     |  INT_CTE        |  0                                |  0
+_int_1                                     |  INT_CTE        |  1                                |  0
+_int_3                                     |  INT_CTE        |  3                                |  0
+_int_2                                     |  INT_CTE        |  2                                |  0
+_str_1                                     |  STRING_CTE     |  NOSE                             |  4

@@ -12,15 +12,14 @@ include number.asm
 	@concat_string 	db STRINGMAXLENGTH dup(?),'$'
 	@NEWLINE 	db 0Dh,0Ah,'$'
 
-	a 	dd ?
-	b 	dd ?
-	c 	db STRINGMAXLENGTH dup(?),'$'
-	_int_5 	dd 5.000000
-	_int_2 	dd 2.000000
-	_int_4 	dd 4.000000
-	_str_1 	db "BIEN",'$',26 dup(?)
-	_int_1 	dd 1.000000
+	_var_MUL 	dd ?
+	_var_b 	dd ?
+	_var_c 	db STRINGMAXLENGTH dup(?),'$'
 	_int_0 	dd 0.000000
+	_int_1 	dd 1.000000
+	_int_3 	dd 3.000000
+	_int_2 	dd 2.000000
+	_str_1 	db "NOSE",'$',26 dup(?)
 
 .CODE
 MAIN:
@@ -31,36 +30,69 @@ MAIN:
 	@aux1 	dq ?
 	@aux2 	dq ?
 	@aux3 	dq ?
+	@aux4 	dq ?
+	FLD 	_int_0
+	FSTP 	_var_MUL
+	FFREE 	st(0)
 
-start_conditional1:
+start_while2:
 
-	FLD 	a
-	FLD 	_int_5
+	FLD 	_var_MUL
+	FLD 	_int_1
+	FADD
+	FSTP 	@aux1
+	FFREE 	st(0)
+	FLD 	_int_1
+	FLD 	_int_3
+	FADD
+	FSTP 	@aux2
+	FFREE 	st(0)
+	FLD 	@aux1
+	FLD 	@aux2
 	FCOMP
 	FSTSW 	ax
 	SAHF
 	JBE 	conditional_branch1
 
-
-start_conditional2:
-
-	FLD 	a
+	DisplayFloat 	_var_MUL, 0
+	MOV 	DX, OFFSET @NEWLINE
+	MOV 	ah, 09
+	INT 	21h
+	FLD 	_var_MUL
 	FLD 	_int_2
 	FCOMP
 	FSTSW 	ax
 	SAHF
-	JE 	conditional_branch2
+	JNE 	conditional_branch2
 
 
-start_conditional3:
+start_while1:
 
-	FLD 	a
-	FLD 	_int_4
+	FLD 	_var_b
+	FLD 	_int_2
 	FCOMP
 	FSTSW 	ax
 	SAHF
-	JNE 	conditional_branch3
+	JBE 	conditional_branch3
 
+	FLD 	_var_b
+	FLD 	_int_1
+	FADD
+	FSTP 	@aux3
+	FFREE 	st(0)
+	FLD 	@aux3
+	FSTP 	_var_b
+	FFREE 	st(0)
+	DisplayFloat 	_var_b, 2
+	MOV 	DX, OFFSET @NEWLINE
+	MOV 	ah, 09
+	INT 	21h
+	JMP 	start_while1
+
+conditional_branch3:
+
+
+	JMP 	conditional_branch4
 
 conditional_branch2:
 
@@ -71,81 +103,22 @@ conditional_branch2:
 	MOV 	ah, 09
 	INT 	21h
 
-conditional_branch3:
+conditional_branch4:
 
-	DisplayFloat 	a, 0
-	MOV 	DX, OFFSET @NEWLINE
-	MOV 	ah, 09
-	INT 	21h
-	FLD 	a
+	FLD 	_int_0
+	FSTP 	_var_b
+	FFREE 	st(0)
+	FLD 	_var_MUL
 	FLD 	_int_1
 	FADD
-	FSTP 	@aux1
+	FSTP 	@aux4
 	FFREE 	st(0)
-	FLD 	@aux1
-	FSTP 	a
+	FLD 	@aux4
+	FSTP 	_var_MUL
 	FFREE 	st(0)
-	JMP 	start_conditional1
+	JMP 	start_while2
 
 conditional_branch1:
-
-	FLD 	_int_0
-	FSTP 	a
-	FFREE 	st(0)
-
-start_conditional4:
-
-	FLD 	a
-	FLD 	_int_5
-	FCOMP
-	FSTSW 	ax
-	SAHF
-	JBE 	conditional_branch4
-
-
-start_conditional5:
-
-	FLD 	b
-	FLD 	_int_5
-	FCOMP
-	FSTSW 	ax
-	SAHF
-	JBE 	conditional_branch5
-
-	FLD 	b
-	FLD 	_int_1
-	FADD
-	FSTP 	@aux2
-	FFREE 	st(0)
-	FLD 	@aux2
-	FSTP 	b
-	FFREE 	st(0)
-	DisplayFloat 	b, 2
-	MOV 	DX, OFFSET @NEWLINE
-	MOV 	ah, 09
-	INT 	21h
-	JMP 	start_conditional5
-
-conditional_branch5:
-
-	FLD 	_int_0
-	FSTP 	b
-	FFREE 	st(0)
-	FLD 	a
-	FLD 	_int_1
-	FADD
-	FSTP 	@aux3
-	FFREE 	st(0)
-	FLD 	@aux3
-	FSTP 	a
-	FFREE 	st(0)
-	DisplayFloat 	a, 0
-	MOV 	DX, OFFSET @NEWLINE
-	MOV 	ah, 09
-	INT 	21h
-	JMP 	start_conditional4
-
-conditional_branch4:
 
 
 	MOV 	AX, 4C00h

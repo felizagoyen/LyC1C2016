@@ -47,6 +47,12 @@ typedef struct Stack {
   struct Stack *previous; 
 } struct_stack;
 
+typedef struct Sentence {
+  struct Sentence *next;
+  char *element;
+  int index;
+} struct_sentence;
+
 FILE *yyin;
 extern int yylineno;
 
@@ -61,8 +67,10 @@ struct_stack *top_element_stack = NULL;
 struct_polish *polish_stack = NULL;
 struct_branch *condition_element = NULL;
 struct_branch *last_condition_element = NULL;
-struct_polish *asm_sentence = NULL;
-struct_polish *last_asm_sentence = NULL;
+struct_sentence *asm_sentence = NULL;
+struct_sentence *last_asm_sentence = NULL;
+struct_sentence *asm_bi = NULL;
+struct_sentence *last_asm_bi = NULL;
 
 char var_name[100][32];
 char var_type[100][10];
@@ -78,15 +86,14 @@ int iguales_index = 0;
 int aux_var_counter = 0;
 int string_counter = 1;
 int conditional_counter = 0;
-int conditional_anidation = 0;
 int branch_conditional_counter = 0;
 int polish_element_evaluated_counter = 1;
 int is_else_if = 0;
 
-void validate_var_type(char *, char *);
+void validate_var_type(char *, char *, char *);
 int valid_type(char *, char *);
-void save_type_id(char *);
-void validate_assignament_type(char *);
+void save_type_id(char *, char*);
+void validate_assignament_type(char *, char *);
 void insert_polish(char *);
 void create_intermediate_file();
 void create_equals_condition();
@@ -221,21 +228,27 @@ assignment:
       ID ASSIGNMENT_OPERATOR string_concatenation
         {
           LOG_MSG("\nRegla 10. assignment -> ID ASSIGNMENT_OPERATOR string_concatenation");
-          validate_var_type($1, "STRING");
-          insert_polish($1);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          validate_var_type(aux, "STRING", $1);
+          insert_polish(strdup(&aux[0]));
           insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR expression
         {
           LOG_MSG("\nRegla 10. assignment -> ID ASSIGNMENT_OPERATOR expression");
-          validate_assignament_type($1);
-          insert_polish($1);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          validate_assignament_type(aux, $1);
+          insert_polish(strdup(&aux[0]));
           insert_polish($2);
         }
     | ID ASSIGNMENT_OPERATOR SUBSTRACTION_OPERATOR factor
         {
-          validate_var_type($1, "NUMBER");
-          insert_polish($1);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          validate_var_type(aux, "NUMBER", $1);
+          insert_polish(strdup(&aux[0]));
           insert_polish($2);
         }
 
@@ -265,8 +278,10 @@ factor:
       OPEN_PARENTHESIS SUBSTRACTION_OPERATOR factor CLOSE_PARENTHESIS
     | ID
         {
-          save_type_id($1);
-          insert_polish($1);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          save_type_id(aux, $1);
+          insert_polish(strdup(&aux[0]));
         }
     | INT_CTE
         {
@@ -306,17 +321,21 @@ string_concatenation:
     | STRING_CTE CONCATENATION_OPERATOR ID
         {
           LOG_MSG("\nRegla 14. string_concatenation -> STRING_CTE CONCATENATION_OPERATOR ID");
-          validate_var_type($3, "STRING");
+          char aux[40] = "_var_";
+          strcat(aux, $3);
+          validate_var_type(aux, "STRING", $3);
           struct_ts *p = get_ts_element_by_value($1);
           insert_polish(strdup(p->name));
-          insert_polish($3);
+          insert_polish(strdup(&aux[0]));
           insert_polish($2);
         }
     | ID CONCATENATION_OPERATOR STRING_CTE
         {
           LOG_MSG("\nRegla 14. string_concatenation -> ID CONCATENATION_OPERATOR STRING_CTE");
-          validate_var_type($1, "STRING");
-          insert_polish($1);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          validate_var_type(aux, "STRING", $1);
+          insert_polish(strdup(&aux[0]));
           struct_ts *p = get_ts_element_by_value($3);
           insert_polish(strdup(p->name));
           insert_polish($2);
@@ -324,10 +343,14 @@ string_concatenation:
     | ID CONCATENATION_OPERATOR ID
         {
           LOG_MSG("\nRegla 14. string_concatenation -> ID CONCATENATION_OPERATOR ID");
-          validate_var_type($1, "STRING");
-          validate_var_type($3, "STRING");
-          insert_polish($1);
-          insert_polish($3);
+          char aux[40] = "_var_";
+          strcat(aux, $1);
+          validate_var_type(aux, "STRING", $1);
+          char aux2[40] = "_var_";
+          strcat(aux2, $3);
+          validate_var_type(aux2, "STRING", $3);
+          insert_polish(strdup(&aux[0]));
+          insert_polish(strdup(&aux2[0]));
           insert_polish($2);
         }
 
@@ -592,7 +615,9 @@ read:
       READ ID
         {
           LOG_MSG("\nRegla 26. read -> READ ID");
-          insert_polish($2);
+          char aux[40] = "_var_";
+          strcat(aux, $2);
+          insert_polish(strdup(&aux[0]));
           insert_polish("READ");
           types_validations_count = -1;
         }
@@ -607,7 +632,9 @@ write:
     | WRITE ID
         {
           LOG_MSG("\nRegla 27. write -> WRITE ID");
-          insert_polish($2);
+          char aux[40] = "_var_";
+          strcat(aux, $2);
+          insert_polish(strdup(&aux[0]));
           insert_polish("WRITE");
           types_validations_count = -1;
         }
@@ -653,11 +680,11 @@ int yyerror(void) {
  /*
   * Valida que el tipo de asignacion sea correcto
   */
-void validate_var_type(char * name, char * type) {
+void validate_var_type(char * name, char * type, char *real_name) {
   struct_ts *p = get_ts_element_by_name(name);
   
   if(p == NULL) {
-    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, name);
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, real_name);
     exit(1);
   } else if(valid_type(type, p->type) != 0) {
     printf("\n\nLinea %d. No coinciden los tipos de datos.\n", yylineno);
@@ -676,12 +703,12 @@ int valid_type(char * type, char * type_ts) {
   }
 }
 
-void save_type_id(char *var_name) {
+void save_type_id(char *var_name, char *real_name) {
   //Busco la variable en la tabla de simbolos
   struct_ts *p = get_ts_element_by_name(var_name);
 
   if(p == NULL) {
-    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, var_name);
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, real_name);
     exit(1);
   }
 
@@ -720,13 +747,14 @@ void create_ts_file() {
   fclose(ts_file);
 }
 
-void validate_assignament_type(char *name) {
+void validate_assignament_type(char *name, char *real_name) {
   char type[10];
   char is_valid_type = 1; //0 valido, 1 no se encuentra declarada
   int x = 0;
 
   //Busco la variable en la tabla de simbolos
   struct_ts *p = get_ts_element_by_name(name);
+
   if(p != NULL) {
     if(strcmp(p->type, "string") == 0) {
       strcpy(type, "STRING");
@@ -740,7 +768,7 @@ void validate_assignament_type(char *name) {
       }
     }
   } else {
-    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, name);
+    printf("\n\nLinea %d. La variable %s no se encuentra declarada\n", yylineno, real_name);
     exit(1);
   }
 
@@ -955,6 +983,10 @@ int add_symbol_table(char *name, char* type, char *value) {
     strcat(string_name, "_str_");
     sprintf(string_name, "%s%d", string_name, string_counter);
     name_aux = string_name;
+  } else if(*(type+0) != '_' || *(type+0) != '@') {
+    strcat(string_name, "_var_");
+    strcat(string_name, name);
+    name_aux = string_name;
   } else {
     strcat(string_name, name);
     name_aux = string_name;
@@ -1053,10 +1085,22 @@ void create_assembler_sentences() {
     fprintf(assembler_file, "\t@aux%d \tdq ?\n", x);
   }
 
-  p = asm_sentence;
-  while(p) {
-    fprintf(assembler_file, "%s", p->element);
-    p = p->next;
+  struct_sentence *s = asm_sentence;
+  int last_element_evaluated = 0;
+  while(s) {
+    struct_sentence *sbi = asm_bi; 
+    while(sbi) {
+      if(asm_bi != NULL && last_element_evaluated != s->index && s->index == sbi->index) {
+        fprintf(assembler_file, "%s", sbi->element);
+        last_element_evaluated = s->index;
+        break;
+      }
+      sbi = sbi->next;
+    }
+    if(s->element != NULL) {
+      fprintf(assembler_file, "%s", s->element);
+    }
+    s = s->next;
   }
 
   fprintf(assembler_file, "\n\tMOV \tAX, 4C00h\n");
@@ -1103,12 +1147,31 @@ void recognize_element(char *element) {
     if(atoi(aux->element) > polish_element_evaluated_counter) {
       inconditional_branch_if_asm(aux);
     } else {
+      char lbl[20];
+      struct_sentence *p = malloc(sizeof(struct_sentence)); 
+      
+      conditional_counter++;
+      
+      sprintf(lbl, "\nstart_while%d:\n\n", conditional_counter);
+      p->element = strdup(&lbl[0]);
+      p->index = atoi(aux->element);
+      p->next = NULL;
+      
+      if(asm_bi) {
+        last_asm_bi->next = p;
+      } else {
+        asm_bi = p;
+      }
+
+      last_asm_bi = p;
+      
       char sentence[100];
-      sprintf(sentence, "\tJMP \tstart_conditional%d\n", conditional_anidation);
+      sprintf(sentence, "\tJMP \tstart_while%d\n", conditional_counter);
       insert_asm_sentence(strdup(&sentence[0]));
     }
     free(aux);
   } else {
+    insert_asm_sentence(NULL);
     push_polish_stack(element);
   }
 }
@@ -1178,12 +1241,6 @@ void compare_asm() {
   struct_polish *aux1 = pop_polish_stack();
   struct_polish *aux2 = pop_polish_stack();
 
-  conditional_counter++;
-  conditional_anidation = conditional_counter;
-
-  sprintf(sentence,"\nstart_conditional%d:\n\n", conditional_counter);
-  insert_asm_sentence(strdup(&sentence[0]));
-
   sprintf(sentence,"\tFLD \t%s\n", aux2->element);
   insert_asm_sentence(strdup(&sentence[0]));
   sprintf(sentence,"\tFLD \t%s\n", aux1->element);
@@ -1195,30 +1252,30 @@ void compare_asm() {
 }
 
 void conditional_branch_asm(char *jump_type) {
-    char sentence[100];
-    struct_polish *aux = pop_polish_stack();
-    char *lbl = get_conditional_label_by_position(aux->element);
+  char sentence[100];
+  struct_polish *aux = pop_polish_stack();
+  char *lbl = get_conditional_label_by_position(aux->element);
 
-    if(lbl != NULL) {
-      sprintf(sentence,"\t%s \t%s\n\n", jump_type, lbl);
-      insert_asm_sentence(strdup(&sentence[0]));
+  if(lbl != NULL) {
+    sprintf(sentence,"\t%s \t%s\n\n", jump_type, lbl);
+    insert_asm_sentence(strdup(&sentence[0]));
+  } else {
+    char label[40];
+    branch_conditional_counter++;
+    sprintf(label,"conditional_branch%d", branch_conditional_counter);
+    sprintf(sentence,"\t%s \t%s\n\n", jump_type, label);
+    insert_asm_sentence(strdup(&sentence[0]));
+
+    struct_branch *p = malloc(sizeof(struct_branch));
+    p->element = aux->element;
+    p->label = strdup(&label[0]);
+    if(condition_element) {
+      last_condition_element->next = p;    
     } else {
-      char label[40];
-      branch_conditional_counter++;
-      sprintf(label,"conditional_branch%d", branch_conditional_counter);
-      sprintf(sentence,"\t%s \t%s\n\n", jump_type, label);
-      insert_asm_sentence(strdup(&sentence[0]));
-
-      struct_branch *p = malloc(sizeof(struct_branch));
-      p->element = aux->element;
-      p->label = strdup(&label[0]);
-      if(condition_element) {
-        last_condition_element->next = p;    
-      } else {
-        condition_element = p;
-      }
-      last_condition_element = p;
+      condition_element = p;
     }
+    last_condition_element = p;
+  }
 }
 
 void create_auxiliar_var(char * av) {
@@ -1244,7 +1301,6 @@ void add_conditional_label() {
       char sentence[100];
       sprintf(sentence, "\n%s:\n\n", p->label);
       insert_asm_sentence(strdup(&sentence[0]));
-      conditional_anidation--;
     }
     p = p->next;
   } 
@@ -1348,8 +1404,9 @@ void concatenation_asm() {
 }
 
 void insert_asm_sentence(char * element) {
-  struct_polish *p = malloc(sizeof(struct_polish)); 
+  struct_sentence *p = malloc(sizeof(struct_sentence)); 
   p->element = element;
+  p->index = polish_element_evaluated_counter;
   p->next = NULL;
   
   if(asm_sentence) {
@@ -1359,7 +1416,6 @@ void insert_asm_sentence(char * element) {
   }
 
   last_asm_sentence = p;
-  polish_index++;
 }
 
 //http://www2.dsu.nodak.edu/users/mberg/assembly/numbers/Numbers.html
