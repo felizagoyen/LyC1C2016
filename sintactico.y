@@ -15,7 +15,7 @@
 #define CODE_FILE "intermedia.txt"
 #define ASSEMBLER_FILE "Final.asm"
 #define LOGGER 1
-#define STRING_MAX_LENGTH 30
+#define STRING_MAX_LENGTH 31
 
 #if LOGGER
   #define LOG_MSG printf
@@ -983,7 +983,7 @@ int add_symbol_table(char *name, char* type, char *value) {
     strcat(string_name, "_str_");
     sprintf(string_name, "%s%d", string_name, string_counter);
     name_aux = string_name;
-  } else if(*(type+0) != '_' || *(type+0) != '@') {
+  } else if(*(name+0) != '_' && *(name+0) != '@') {
     strcat(string_name, "_var_");
     strcat(string_name, name);
     name_aux = string_name;
@@ -1374,13 +1374,13 @@ void read_asm() {
       insert_asm_sentence("\tMOV byte ptr @read_string, 21\n");
       insert_asm_sentence("\tMOV DX, OFFSET @read_string\n");
       insert_asm_sentence("\tMOV ah, 0ah\n");
-      insert_asm_sentence("\tINT 21h\n\n");
+      insert_asm_sentence("\tINT 21h\n");
       insert_asm_sentence("\tMOV SI, 0002\n");
       insert_asm_sentence("\tLEA DX, @read_string[SI]\n");
       insert_asm_sentence("\tMOV SI, DX\n");
       sprintf(sentence, "\tMOV DI,OFFSET %s\n", aux->element);
       insert_asm_sentence(strdup(&sentence[0]));
-      insert_asm_sentence("\t STRCPY\n\n");
+      insert_asm_sentence("\tSTRCPY\n\n");
   }
 }
 
