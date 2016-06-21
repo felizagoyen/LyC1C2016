@@ -50,6 +50,7 @@ include number.asm
 	_equalsPivote1 	dd ?
 	_equalsCount2 	dd ?
 	_equalsPivote2 	dd ?
+	_str_13 	db "Cantidad de iguales",'$',12 dup(?)
 
 .CODE
 MAIN:
@@ -411,6 +412,12 @@ conditional_branch10:
 	FLD 	_equalsCount1
 	FSTP 	_var_h
 	FFREE 	st(0)
+	MOV 	DX, OFFSET _str_13
+	MOV 	ah, 09
+	INT 	21h
+	MOV 	DX, OFFSET @NEWLINE
+	MOV 	ah, 09
+	INT 	21h
 	DisplayFloat 	_var_h, 0
 	MOV 	DX, OFFSET @NEWLINE
 	MOV 	ah, 09

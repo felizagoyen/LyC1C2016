@@ -193,5 +193,7 @@ Posicion  |   Elemento
 191       |  _equalsCount1
 192       |  _var_h
 193       |  :=
-194       |  _var_h
+194       |  _str_13
 195       |  WRITE
+196       |  _var_h
+197       |  WRITE

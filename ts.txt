@@ -38,3 +38,4 @@ _equalsCount1                              |  integer        |                  
 _equalsPivote1                             |  integer        |                                   |  0
 _equalsCount2                              |  integer        |                                   |  0
 _equalsPivote2                             |  integer        |                                   |  0
+_str_13                                    |  STRING_CTE     |  Cantidad de iguales              |  19

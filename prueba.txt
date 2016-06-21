@@ -3,7 +3,7 @@ DIM [a] AS [string]
 DIM [e,b,c,f,h] AS [string,integer,real,real,integer]
 DIM [string_var, int_var, real_var] AS [string, integer, real]
 
--/ Prueba de /- Comentario /-
+-/ Prueba de /- Comentario /- 
 WRITE "Ingrese un numero entero"
 READ int_var
 WRITE "El numero ingresado es:"
